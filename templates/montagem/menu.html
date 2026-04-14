@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Montagem — PrimeTool{% endblock %}
+{% block page_title %}Montagem{% endblock %}
+{% block content %}
+<div class="action-list">
+  <a href="{% url 'montagem:criar' %}" class="action-btn green">Nova Tarefa de Montagem</a>
+  <a href="{% url 'montagem:guias' %}" class="action-btn navy">Guias de Transporte</a>
+</div>
+{% endblock %}

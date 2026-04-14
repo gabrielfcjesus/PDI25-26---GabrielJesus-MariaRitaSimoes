@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% block title %}Planeamento — PrimeTool{% endblock %}
+{% block page_title %}Planeamento{% endblock %}
+{% block sub_header %}
+<div class="sub-header">
+  <a href="{% url 'planeamento:ops' %}">Planeamento</a>
+  <span class="sep">›</span>
+  <span>Ordens de Produção</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="pt-card">
+  <div class="pt-card-header">
+    <span><i class="bi bi-calendar3 me-2"></i>Ordens de Produção</span>
+    <div style="display:flex;gap:8px;">
+      <a href="{% url 'producao:assistencias' %}" style="background:var(--orange,#e67e22);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-family:var(--font);font-weight:700;font-size:.78rem;letter-spacing:.5px;text-decoration:none;text-transform:uppercase;">Assistências</a>
+      {% if request.user.is_direcao %}
+      <a href="{% url 'planeamento:op-criar' %}" style="background:var(--green);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-family:var(--font);font-weight:700;font-size:.78rem;letter-spacing:.5px;text-decoration:none;text-transform:uppercase;">+ Nova OP</a>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── Barra de pesquisa ── #}
+  <div style="padding:14px 20px;border-bottom:1px solid #e8eaf0;position:relative;">
+    <div style="position:relative;max-width:380px;">
+      <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#aaa;font-size:1rem;pointer-events:none;">
+        <i class="bi bi-search"></i>
+      </span>
+      <input id="pesquisa-op" type="text" placeholder="Pesquisar por referência, nome ou cliente…"
+             autocomplete="off"
+             style="width:100%;padding:9px 14px 9px 36px;border:1.5px solid #dde2ee;border-radius:8px;font-family:var(--font);font-size:.85rem;color:var(--navy);outline:none;box-sizing:border-box;">
+      <div id="sugestoes-op"
+           style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1.5px solid #dde2ee;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.10);z-index:200;max-height:260px;overflow-y:auto;"></div>
+    </div>
+  </div>
+
+  <table class="pt-table">
+    <thead>
+      <tr>
+        <th>Ref.</th><th>Nome</th><th>Cliente</th>
+        <th>Estado</th><th>Entrega</th><th>Prioridade</th>
+        {% if request.user.is_direcao %}<th></th>{% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for o in ordens %}
+      <tr class="op-row"
+          data-ref="{{ o.referencia }}"
+          data-nome="{{ o.nome }}"
+          data-cliente="{{ o.cliente }}"
+          data-search="{{ o.referencia }} {{ o.nome }} {{ o.cliente }}">
+        <td><strong>{{ o.referencia }}</strong></td>
+        <td><a href="{% url 'planeamento:op-detalhe' o.pk %}" style="color:var(--blue);text-decoration:none;font-weight:600;">{{ o.nome }}</a></td>
+        <td>{{ o.cliente }}</td>
+        <td><span class="badge-s {{ o.estado }}">{{ o.get_estado_display }}</span></td>
+        <td>{{ o.data_entrega_prevista|date:"d/m/Y"|default:"—" }}</td>
+        <td>{{ o.get_prioridade_display }}</td>
+        {% if request.user.is_direcao %}
+        <td style="white-space:nowrap;">
+          <a href="{% url 'planeamento:op-editar' o.pk %}"
+             style="background:var(--blue);color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:.75rem;font-weight:700;text-decoration:none;margin-right:4px;">
+            Editar
+          </a>
+          <button type="button"
+                  onclick="confirmarEliminar('{{ o.pk }}', '{{ o.referencia }}', '{{ o.nome }}')"
+                  style="background:#e74c3c;color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:.75rem;font-weight:700;cursor:pointer;">
+            Eliminar
+          </button>
+        </td>
+        {% endif %}
+      </tr>
+      {% empty %}
+      <tr class="op-empty">
+        <td colspan="{% if request.user.is_direcao %}7{% else %}6{% endif %}"
+            style="text-align:center;padding:32px;color:#999;font-style:italic;">
+          Nenhuma ordem de producao registada.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Modal confirmação eliminar -->
+<div id="modal-eliminar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:12px;padding:28px 32px;width:100%;max-width:440px;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+    <h3 style="margin:0 0 10px;font-size:1rem;font-weight:700;color:#c0392b;">Eliminar Ordem de Producao</h3>
+    <p id="modal-eliminar-texto" style="margin:0 0 16px;color:#555;font-size:.9rem;"></p>
+    <form id="form-eliminar" method="post">
+      {% csrf_token %}
+      <div style="display:flex;gap:10px;justify-content:flex-end;">
+        <button type="button" onclick="fecharModalEliminar()"
+                style="background:var(--bg-secondary,#f4f6fb);color:var(--text-main,#333);border:none;border-radius:8px;padding:9px 20px;font-weight:700;cursor:pointer;">
+          Cancelar
+        </button>
+        <button type="submit"
+                style="background:#e74c3c;color:#fff;border:none;border-radius:8px;padding:9px 20px;font-weight:700;cursor:pointer;">
+          Sim, eliminar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function confirmarEliminar(pk, ref, nome) {
+  document.getElementById('modal-eliminar-texto').textContent =
+    'Tem a certeza que pretende eliminar a ordem ' + ref + ' — ' + nome + '? Esta acao nao pode ser desfeita.';
+  document.getElementById('form-eliminar').action = '/planeamento/ops/' + pk + '/eliminar/';
+  document.getElementById('modal-eliminar').style.display = 'flex';
+}
+
+function fecharModalEliminar() {
+  document.getElementById('modal-eliminar').style.display = 'none';
+}
+
+document.getElementById('modal-eliminar').addEventListener('click', function(e) {
+  if (e.target === this) fecharModalEliminar();
+});
+
+// ── Pesquisa live ──
+(function(){
+  // Recolher dados das linhas da tabela
+  const rows = Array.from(document.querySelectorAll('.pt-table tbody tr[data-ref]'));
+
+  // Injetar data-ref e data-text nas linhas existentes
+  // (feito inline abaixo via atributos no HTML — ver cada <tr>)
+
+  const input    = document.getElementById('pesquisa-op');
+  const dropdown = document.getElementById('sugestoes-op');
+
+  function normaliza(s){ return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+
+  function filtrar(q){
+    const n = normaliza(q);
+    let count = 0;
+    document.querySelectorAll('.pt-table tbody tr.op-row').forEach(function(tr){
+      const txt = normaliza(tr.dataset.search || '');
+      const match = !n || txt.includes(n);
+      tr.style.display = match ? '' : 'none';
+      if(match) count++;
+    });
+    // esconder linha "vazia" se houver resultados filtrados
+    const emptyRow = document.querySelector('.pt-table tbody tr.op-empty');
+    if(emptyRow) emptyRow.style.display = count === 0 ? '' : 'none';
+  }
+
+  function mostrarSugestoes(q){
+    if(!q || q.length < 2){ dropdown.style.display='none'; return; }
+    const n = normaliza(q);
+    const matches = [];
+    document.querySelectorAll('.pt-table tbody tr.op-row').forEach(function(tr){
+      if(normaliza(tr.dataset.search||'').includes(n)){
+        matches.push({ref: tr.dataset.ref, nome: tr.dataset.nome, cliente: tr.dataset.cliente});
+      }
+    });
+    if(!matches.length){ dropdown.style.display='none'; return; }
+    dropdown.innerHTML = matches.slice(0,8).map(function(m){
+      return '<div class="sug-item" style="padding:9px 14px;cursor:pointer;font-size:.84rem;border-bottom:1px solid #f0f2f7;display:flex;gap:10px;align-items:center;">'
+           + '<strong style="color:var(--navy);min-width:80px;">'+m.ref+'</strong>'
+           + '<span style="color:#555;flex:1;">'+m.nome+'</span>'
+           + '<span style="color:#aaa;font-size:.76rem;">'+m.cliente+'</span>'
+           + '</div>';
+    }).join('');
+    dropdown.style.display = 'block';
+    // click numa sugestão: preencher input e filtrar
+    dropdown.querySelectorAll('.sug-item').forEach(function(el, idx){
+      el.addEventListener('mousedown', function(e){
+        e.preventDefault();
+        input.value = matches[idx].ref;
+        dropdown.style.display = 'none';
+        filtrar(matches[idx].ref);
+      });
+      el.addEventListener('mouseover', function(){ this.style.background='#f4f6fb'; });
+      el.addEventListener('mouseout',  function(){ this.style.background=''; });
+    });
+  }
+
+  let debounce;
+  input.addEventListener('input', function(){
+    clearTimeout(debounce);
+    const q = this.value.trim();
+    filtrar(q);
+    debounce = setTimeout(function(){ mostrarSugestoes(q); }, 150);
+  });
+  input.addEventListener('blur', function(){ setTimeout(function(){ dropdown.style.display='none'; }, 200); });
+  input.addEventListener('focus', function(){ if(this.value.trim().length>=2) mostrarSugestoes(this.value.trim()); });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Pedir Assistência — PrimeTool{% endblock %}
+{% block page_title %}Produção{% endblock %}
+{% block sub_header %}
+<div class="sub-header">
+  <a href="{% url 'producao:menu' %}">Produção</a>
+  <span class="sep">›</span>
+  <span>Pedir Assistência</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="pt-card" style="max-width:640px;">
+  <div class="pt-card-header"><i class="bi bi-exclamation-triangle me-2"></i>Pedido de Assistência</div>
+  <form method="post" style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+    {% csrf_token %}
+
+    <div class="pt-field">
+      <label class="pt-label">Ordem de Produção *</label>
+      <select name="op" class="pt-input pt-select" required>
+        <option value="">Selecionar OP...</option>
+        {% for op in ordens %}
+        <option value="{{ op.pk }}">{{ op.referencia }} — {{ op.nome }} ({{ op.cliente }})</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="pt-field">
+      <label class="pt-label">Urgência</label>
+      <select name="urgencia" class="pt-input pt-select">
+        {% for val, label in urgencia_choices %}
+        <option value="{{ val }}">{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="pt-field">
+      <label class="pt-label">Descrição do Problema *</label>
+      <textarea name="descricao" class="pt-input" rows="5" placeholder="Descreva o problema com detalhe..." required style="resize:vertical;"></textarea>
+    </div>
+
+    <div style="display:flex;gap:10px;">
+      <button type="submit" class="field-btn" style="background:var(--orange,#e67e22);">Enviar Pedido</button>
+      <a href="{% url 'producao:menu' %}" class="field-btn" style="background:var(--bg-secondary,#f4f6fb);color:var(--text-main,#333);text-decoration:none;">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

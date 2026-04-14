@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Montagem — PrimeTool{% endblock %}
+{% block page_title %}Montagem{% endblock %}
+{% block sub_header %}
+<div class="sub-header">
+  <a href="{% url 'montagem:menu' %}">Montagem</a>
+  <span class="sep">›</span>
+  <span>Tarefas de Montagem</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="pt-card">
+  <div class="pt-card-header">
+    <span><i class="bi bi-hammer me-2"></i>Tarefas de Montagem</span>
+    <a href="{% url 'montagem:criar' %}" style="background:var(--green);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-family:var(--font);font-weight:700;font-size:.78rem;letter-spacing:.5px;text-decoration:none;text-transform:uppercase;">+ Nova Tarefa</a>
+  </div>
+  <table class="pt-table">
+    <thead><tr>
+      <th>Ordem</th><th>Título</th><th>Responsável</th>
+      <th>Estado</th><th>Data Prevista</th>
+    </tr></thead>
+    <tbody>
+      {% for t in tarefas %}
+      <tr>
+        <td>{{ t.ordem }}</td>
+        <td>{{ t.titulo }}</td>
+        <td>{{ t.responsavel|default:"—" }}</td>
+        <td><span class="badge-s montagem">{{ t.get_estado_display }}</span></td>
+        <td>{{ t.data_prevista|date:"d/m/Y"|default:"—" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" style="text-align:center;padding:32px;color:#999;font-style:italic;">Nenhuma tarefa de montagem.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

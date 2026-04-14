@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Pedir Material Adicional — PrimeTool{% endblock %}
+{% block page_title %}Produção{% endblock %}
+{% block sub_header %}
+<div class="sub-header">
+  <a href="{% url 'producao:menu' %}">Produção</a>
+  <span class="sep">›</span>
+  <a href="{% url 'producao:ordens' %}">Ordens de Produção</a>
+  <span class="sep">›</span>
+  <a href="{% url 'producao:op-detalhe' op.pk %}">{{ op.referencia }}</a>
+  <span class="sep">›</span>
+  <span>Pedir Material Adicional</span>
+</div>
+{% endblock %}
+{% block content %}
+<div style="max-width:640px;margin:0 auto;">
+  <form method="post">
+    {% csrf_token %}
+    <div class="pt-card">
+      <div class="pt-card-header">
+        <i class="bi bi-plus-circle me-2"></i>Pedido de Material Adicional
+        <span style="font-weight:400;font-size:.78rem;opacity:.8;">OP {{ op.referencia }} — {{ op.nome }}</span>
+      </div>
+      <div style="padding:24px;display:flex;flex-direction:column;gap:14px;">
+
+        {# Seleção do material do catálogo (opcional) #}
+        <div class="pt-field">
+          <label class="pt-label">Material do Catálogo <span style="font-weight:400;text-transform:none;color:#888;">(opcional)</span></label>
+          <select name="material" id="sel-material" class="pt-input pt-select" onchange="preencherDescricao()">
+            <option value="">— Selecionar do catálogo ou preencher manualmente abaixo —</option>
+            {% for m in materiais %}
+              <option value="{{ m.pk }}" data-nome="{{ m.referencia }} — {{ m.nome }}" data-unidade="{{ m.unidade }}">
+                {{ m.referencia }} — {{ m.nome }} (stock: {{ m.stock_atual }} {{ m.unidade }})
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        {# Descrição livre — obrigatória #}
+        <div class="pt-field">
+          <label class="pt-label">Referência / Descrição do Material <span style="color:var(--orange);">*</span></label>
+          <input type="text" name="descricao_material" id="inp-descricao"
+                 class="pt-input" placeholder="Ex: Chapa inox 2mm 1000x2000" required>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="pt-field">
+            <label class="pt-label">Quantidade <span style="color:var(--orange);">*</span></label>
+            <input type="number" name="quantidade" step="0.01" min="0.01"
+                   class="pt-input" placeholder="Ex: 3.5" required>
+          </div>
+          <div class="pt-field">
+            <label class="pt-label">Unidade</label>
+            <select name="unidade" id="sel-unidade" class="pt-input pt-select">
+              {% for val, label in unidade_choices %}
+                <option value="{{ val }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        {# Justificação obrigatória — razão da rastreabilidade #}
+        <div class="pt-field">
+          <label class="pt-label">Justificação <span style="color:var(--orange);">*</span></label>
+          <textarea name="justificacao" class="pt-input" rows="3" required
+                    placeholder="Ex: Chapa danificada no corte. Necessário substituir peça da OP."></textarea>
+          <div style="font-size:.72rem;color:#888;margin-top:4px;">
+            Obrigatório — serve de base para rastreabilidade do consumo de material.
+          </div>
+        </div>
+
+        <div class="pt-field">
+          <label class="pt-label">Observações <span style="font-weight:400;text-transform:none;color:#888;">(opcional)</span></label>
+          <textarea name="observacoes" class="pt-input" rows="2"
+                    placeholder="Informação adicional para o armazém..."></textarea>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:8px;">
+          <button type="submit" class="field-btn" style="background:var(--orange);">
+            Registar Pedido
+          </button>
+          <a href="{% url 'producao:op-detalhe' op.pk %}"
+             style="flex:1;display:flex;align-items:center;justify-content:center;background:#e8eaf0;color:var(--text);border:none;border-radius:10px;padding:14px 20px;font-family:var(--font);font-weight:700;font-size:.82rem;text-decoration:none;text-align:center;">
+            Cancelar
+          </a>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+function preencherDescricao() {
+  const sel = document.getElementById('sel-material');
+  const opt = sel.selectedOptions[0];
+  const inp = document.getElementById('inp-descricao');
+  const unidade = document.getElementById('sel-unidade');
+
+  if (opt && opt.value) {
+    if (!inp.value) inp.value = opt.dataset.nome || '';
+    // Selecionar a unidade correspondente ao material
+    const u = opt.dataset.unidade;
+    if (u) {
+      for (let o of unidade.options) { if (o.value === u) { o.selected = true; break; } }
+    }
+  }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Qualidade — PrimeTool{% endblock %}
+{% block page_title %}Qualidade{% endblock %}
+{% block content %}
+<div class="action-list">
+  <a href="{% url 'qualidade:verificar' %}" class="action-btn green">Verificar Ordens de Produção</a>
+  <a href="{% url 'qualidade:inspecoes' %}" class="action-btn blue">Consultar Verificações</a>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Planeamento — PrimeTool{% endblock %}
+{% block page_title %}Planeamento{% endblock %}
+{% block content %}
+<div class="pt-card">
+  <div class="pt-card-header">
+    <span><i class="bi bi-calendar3 me-2"></i>Ordens de Produção</span>
+    {% if request.user.is_direcao %}
+    <a href="{% url 'planeamento:obra-criar' %}" style="background:var(--green);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-family:var(--font);font-weight:700;font-size:.78rem;letter-spacing:.5px;text-decoration:none;text-transform:uppercase;">+ Nova Ordem</a>
+    {% endif %}
+  </div>
+  <table class="pt-table">
+    <thead><tr><th>Ref.</th><th>Nome</th><th>Cliente</th><th>Estado</th><th>Entrega</th><th>Prioridade</th></tr></thead>
+    <tbody>
+      {% for o in ordens %}
+      <tr>
+        <td><strong>{{ o.referencia }}</strong></td>
+        <td><a href="{% url 'planeamento:obra-detalhe' o.pk %}" style="color:var(--blue);text-decoration:none;font-weight:600;">{{ o.nome }}</a></td>
+        <td>{{ o.cliente }}</td>
+        <td><span class="badge-s {{ o.estado }}">{{ o.get_estado_display }}</span></td>
+        <td>{{ o.data_entrega_prevista|date:"d/m/Y"|default:"—" }}</td>
+        <td>{{ o.get_prioridade_display }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" style="text-align:center;padding:32px;color:#999;font-style:italic;">Nenhuma ordem registada.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

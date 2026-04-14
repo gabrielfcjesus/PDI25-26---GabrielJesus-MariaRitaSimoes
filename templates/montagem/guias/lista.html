@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Guias de Transporte — PrimeTool{% endblock %}
+{% block page_title %}Montagem{% endblock %}
+{% block sub_header %}
+<div class="sub-header">
+  <a href="{% url 'montagem:menu' %}">Montagem</a>
+  <span class="sep">›</span>
+  <span>Guias de Transporte</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="pt-card">
+  <div class="pt-card-header">
+    <span><i class="bi bi-truck me-2"></i>Guias de Transporte</span>
+  </div>
+  <div style="padding:0;">
+    <table class="pt-table">
+      <thead><tr>
+        <th>Guia / Ref.</th><th>Ordem de Produção</th><th>Cliente</th>
+        <th>Transportadora</th><th>Data Envio</th><th>Morada de Entrega</th><th>Estado</th>
+      </tr></thead>
+      <tbody>
+        {% for g in guias %}
+        <tr style="cursor:pointer;" onclick="window.location='{% url 'montagem:guia-detalhe' g.pk %}'">
+          <td>
+            <a href="{% url 'montagem:guia-detalhe' g.pk %}" style="color:var(--blue);text-decoration:none;font-weight:700;">{{ g.referencia }}</a>
+            {% if g.guia_transporte %}<br><span style="font-size:.75rem;color:#888;">{{ g.guia_transporte }}</span>{% endif %}
+          </td>
+          <td>
+            <strong>{{ g.ordem.referencia }}</strong><br>
+            <span style="font-size:.82rem;color:#666;">{{ g.ordem.nome }}</span>
+          </td>
+          <td>{{ g.ordem.cliente }}</td>
+          <td>{{ g.transportadora|default:"—" }}</td>
+          <td>{{ g.data_prevista_envio|date:"d/m/Y"|default:"—" }}</td>
+          <td style="max-width:220px;white-space:pre-line;">{{ g.morada_entrega|default:"—" }}</td>
+          <td>
+            {% if g.estado == 'pendente' %}
+              <span class="badge-s planeamento">Pendente</span>
+            {% elif g.estado == 'em_preparacao' %}
+              <span class="badge-s em_producao">Em Preparação</span>
+            {% elif g.estado == 'pronta' %}
+              <span class="badge-s qualidade">Pronta</span>
+            {% elif g.estado == 'enviada' %}
+              <span class="badge-s expedicao">Enviada</span>
+            {% elif g.estado == 'entregue' %}
+              <span class="badge-s concluida">Entregue</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" style="text-align:center;padding:32px;color:#999;font-style:italic;">Nenhuma guia de transporte disponível.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

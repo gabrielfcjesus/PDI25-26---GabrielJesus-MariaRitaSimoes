@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}{% if object %}Editar Utilizador{% else %}Novo Utilizador{% endif %} — PrimeTool{% endblock %}
+{% block page_title %}Recursos Humanos{% endblock %}
+{% block content %}
+<div class="pt-card" style="max-width:600px;margin:0 auto;">
+  <div class="pt-card-header">
+    <span><i class="bi bi-person-gear me-2"></i>{% if object %}Editar Utilizador — {{ object.username }}{% else %}Novo Utilizador{% endif %}</span>
+  </div>
+  <div style="padding:28px;">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <div class="pt-field">
+        <label class="pt-label">Nome de utilizador</label>
+        <input type="text" name="username" value="{{ form.username.value|default:'' }}" class="pt-input" required>
+        {% if form.username.errors %}<p style="color:red;font-size:.8rem;margin-top:4px;">{{ form.username.errors.0 }}</p>{% endif %}
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="pt-field">
+          <label class="pt-label">Primeiro nome</label>
+          <input type="text" name="first_name" value="{{ form.first_name.value|default:'' }}" class="pt-input">
+        </div>
+        <div class="pt-field">
+          <label class="pt-label">Último nome</label>
+          <input type="text" name="last_name" value="{{ form.last_name.value|default:'' }}" class="pt-input">
+        </div>
+      </div>
+
+      <div class="pt-field">
+        <label class="pt-label">Email</label>
+        <input type="email" name="email" value="{{ form.email.value|default:'' }}" class="pt-input">
+      </div>
+
+      <div class="pt-field">
+        <label class="pt-label">Telefone</label>
+        <input type="text" name="telefone" value="{{ form.telefone.value|default:'' }}" class="pt-input">
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="pt-field">
+          <label class="pt-label">Departamento</label>
+          <select name="departamento" class="pt-input pt-select">
+            <option value="">— Selecionar —</option>
+            {% for dep in form.departamento.field.queryset %}
+            <option value="{{ dep.pk }}" {% if form.departamento.value|stringformat:"s" == dep.pk|stringformat:"s" %}selected{% endif %}>{{ dep.nome }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="pt-field">
+          <label class="pt-label">Cargo</label>
+          <select name="cargo" class="pt-input pt-select">
+            <option value="">— Selecionar —</option>
+            {% for cargo in form.cargo.field.queryset %}
+            <option value="{{ cargo.pk }}" {% if form.cargo.value|stringformat:"s" == cargo.pk|stringformat:"s" %}selected{% endif %}>{{ cargo.nome }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      {% if not object %}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="pt-field">
+          <label class="pt-label">Palavra-passe</label>
+          <input type="password" name="password1" class="pt-input" required>
+          {% if form.password1.errors %}<p style="color:red;font-size:.8rem;margin-top:4px;">{{ form.password1.errors.0 }}</p>{% endif %}
+        </div>
+        <div class="pt-field">
+          <label class="pt-label">Confirmar palavra-passe</label>
+          <input type="password" name="password2" class="pt-input" required>
+          {% if form.password2.errors %}<p style="color:red;font-size:.8rem;margin-top:4px;">{{ form.password2.errors.0 }}</p>{% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="pt-field" style="display:flex;align-items:center;gap:10px;margin-top:6px;">
+        <input type="checkbox" name="ativo" id="ativo" {% if form.ativo.value %}checked{% endif %} style="width:16px;height:16px;cursor:pointer;">
+        <label for="ativo" class="pt-label" style="margin:0;cursor:pointer;">Utilizador ativo</label>
+      </div>
+
+      {% if form.non_field_errors %}
+      <div style="background:#fff0f0;border:1px solid #f5c6cb;border-radius:6px;padding:10px 14px;margin-top:10px;color:#c00;font-size:.85rem;">
+        {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+      </div>
+      {% endif %}
+
+      <div style="display:flex;gap:10px;margin-top:24px;">
+        <button type="submit" style="background:var(--green);color:#fff;border:none;padding:10px 24px;border-radius:8px;font-family:var(--font);font-weight:700;font-size:.82rem;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;">
+          {% if object %}Guardar Alterações{% else %}Criar Utilizador{% endif %}
+        </button>
+        <a href="{% url 'core:utilizadores' %}" style="background:#eee;color:#333;border:none;padding:10px 24px;border-radius:8px;font-family:var(--font);font-weight:700;font-size:.82rem;letter-spacing:.5px;text-transform:uppercase;text-decoration:none;">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

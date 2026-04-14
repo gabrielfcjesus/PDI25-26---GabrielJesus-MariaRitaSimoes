@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Ordens de Produção — PrimeTool{% endblock %}
+{% block page_title %}Produção{% endblock %}
+{% block sub_header %}
+<div class="sub-header">
+  <a href="{% url 'producao:menu' %}">Produção</a>
+  <span class="sep">›</span>
+  <span>Consultar Ordens de Produção</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="pt-card">
+  <div class="pt-card-header">
+    <span><i class="bi bi-gear me-2"></i>Ordens de Produção</span>
+  </div>
+  <div style="padding:0;">
+    <table class="pt-table">
+      <thead><tr>
+        <th>Referência</th><th>Nome</th><th>Cliente</th>
+        <th>Estado</th><th>Entrega Prevista</th><th>Responsável</th>
+      </tr></thead>
+      <tbody>
+        {% for op in ordens %}
+        <tr>
+          <td><strong><a href="{% url 'producao:op-detalhe' op.pk %}" style="color:var(--blue);text-decoration:none;">{{ op.referencia }}</a></strong></td>
+          <td><a href="{% url 'producao:op-detalhe' op.pk %}" style="color:var(--text);text-decoration:none;">{{ op.nome }}</a></td>
+          <td>{{ op.cliente }}</td>
+          <td><span class="badge-s {{ op.estado }}">{{ op.get_estado_display }}</span></td>
+          <td>{{ op.data_entrega_prevista|date:"d/m/Y"|default:"—" }}</td>
+          <td>{{ op.responsavel|default:"—" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" style="text-align:center;padding:32px;color:#999;font-style:italic;">Nenhuma ordem de produção encontrada.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

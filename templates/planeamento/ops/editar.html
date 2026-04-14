@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+{% block title %}Editar OP {{ ordem.referencia }} — PrimeTool{% endblock %}
+{% block page_title %}Planeamento{% endblock %}
+{% block sub_header %}
+<div class="sub-header">
+  <a href="{% url 'planeamento:ops' %}">Planeamento</a>
+  <span class="sep">›</span>
+  <span>Editar {{ ordem.referencia }}</span>
+</div>
+{% endblock %}
+{% block content %}
+<form method="post" id="form-op">
+  {% csrf_token %}
+  <div class="form-panel">
+
+    <!-- Coluna esquerda: formulário -->
+    <div class="pt-card" style="margin:0;">
+      <div class="pt-card-header"><i class="bi bi-pencil me-2"></i>Editar Ordem de Producao</div>
+      <div style="padding:20px;display:flex;flex-direction:column;gap:13px;">
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div class="pt-field">
+            <label class="pt-label">Referencia</label>
+            <input type="text" class="pt-input" value="{{ ordem.referencia }}" readonly
+                   style="background:var(--bg-secondary,#f4f6fb);color:var(--text-muted,#888);cursor:default;">
+          </div>
+          <div class="pt-field">
+            <label class="pt-label">Prioridade</label>
+            <select name="prioridade" class="pt-input pt-select">
+              <option value="normal"  {% if ordem.prioridade == 'normal'  %}selected{% endif %}>Normal</option>
+              <option value="alta"    {% if ordem.prioridade == 'alta'    %}selected{% endif %}>Alta</option>
+              <option value="urgente" {% if ordem.prioridade == 'urgente' %}selected{% endif %}>Urgente</option>
+              <option value="baixa"   {% if ordem.prioridade == 'baixa'   %}selected{% endif %}>Baixa</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="pt-field">
+          <label class="pt-label">Nome da OP</label>
+          <input type="text" name="nome" class="pt-input" value="{{ ordem.nome }}" required>
+        </div>
+
+        <div class="pt-field">
+          <label class="pt-label">Cliente</label>
+          <select name="cliente" class="pt-input pt-select" required>
+            <option value="">Selecionar cliente...</option>
+            {% for c in clientes %}
+            <option value="{{ c.pk }}" {% if c.pk == ordem.cliente_id %}selected{% endif %}>{{ c.nome }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="pt-field">
+          <label class="pt-label">Data Entrega Prevista</label>
+          <input type="date" name="data_entrega_prevista" class="pt-input"
+                 value="{{ ordem.data_entrega_prevista|date:'Y-m-d'|default:'' }}">
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:4px;">
+          <button type="submit" class="field-btn" style="background:var(--green);">Guardar Alterações</button>
+          <a href="{% url 'planeamento:ops' %}" class="field-btn" style="background:var(--bg-secondary,#f4f6fb);color:var(--text-main,#333);text-decoration:none;">Cancelar</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Coluna direita: materiais -->
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <button type="button" class="field-btn" onclick="adicionarItem()" style="background:#fff;color:var(--navy);border:2px solid var(--navy);">
+        Inserir Material +
+      </button>
+      <div class="list-panel" id="lista-material">
+        <span class="list-panel-title" id="lista-vazia" style="display:none;">Lista Material</span>
+        <div id="itens-container" style="width:100%;display:flex;flex-direction:column;gap:10px;"></div>
+      </div>
+    </div>
+
+  </div>
+</form>
+
+<style>
+.mat-row { background:#f8faff; border:1.5px solid #e0e3ee; border-radius:10px; padding:10px 12px; }
+.mat-search-wrap { position:relative; }
+.mat-search-input { padding-left:34px !important; }
+.mat-search-icon { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#999; pointer-events:none; }
+.mat-dropdown { position:absolute; top:calc(100% + 4px); left:0; right:0; background:#fff; border:1.5px solid #c5cadb; border-radius:8px; max-height:220px; overflow-y:auto; z-index:200; box-shadow:0 4px 16px rgba(0,0,0,.10); display:none; }
+.mat-dropdown-item { padding:9px 14px; cursor:pointer; font-size:.85rem; border-bottom:1px solid #f0f2f8; display:flex; flex-direction:column; gap:2px; }
+.mat-dropdown-item:last-child { border-bottom:none; }
+.mat-dropdown-item:hover { background:#f0f4ff; }
+.mat-dropdown-item .ref { font-size:.75rem; color:#888; }
+.mat-dropdown-item .stock-low { color:#e67e22; font-size:.72rem; }
+.mat-dropdown-empty { padding:12px 14px; color:#999; font-size:.85rem; text-align:center; }
+</style>
+
+<script>
+const PESQUISAR_URL = '{% url "armazem:materiais-pesquisar" %}';
+let itemCount = 0;
+let categorias = {{ categorias_json|safe }};
+
+function adicionarItem(preselect) {
+  itemCount++;
+  const empty = document.getElementById('lista-vazia');
+  if (empty) empty.style.display = 'none';
+  document.getElementById('lista-material').style.alignItems = 'flex-start';
+
+  const container = document.getElementById('itens-container');
+  const n = itemCount;
+
+  if (preselect) {
+    // Linha simplificada com material já selecionado
+    const wrap = document.createElement('div');
+    wrap.className = 'mat-row';
+    wrap.id = 'mat-row-' + n;
+    wrap.innerHTML = `
+      <input type="hidden" name="item_material_id_${n}" value="${preselect.material__id || ''}">
+      <input type="hidden" name="item_desc_${n}" value="${preselect.descricao}">
+      <div style="display:flex;gap:8px;align-items:center;">
+        ${preselect.material__referencia
+          ? `<code style="background:#f0f4ff;padding:4px 10px;border-radius:6px;font-size:.8rem;flex-shrink:0;">${preselect.material__referencia}</code>`
+          : ''}
+        <span style="flex:1;font-weight:600;font-size:.88rem;">${preselect.descricao}</span>
+        <input class="pt-input" name="item_qtd_${n}" type="number" min="0.01" step="0.01"
+               placeholder="Qtd" style="flex:0 0 80px;" value="${preselect.quantidade}" required>
+        <span style="font-size:.8rem;color:#888;min-width:40px;">${preselect.material__unidade || ''}</span>
+        <button type="button" onclick="removerItem(${n})"
+                style="background:#f8d7da;color:#58151c;border:none;border-radius:8px;padding:8px 12px;cursor:pointer;font-weight:700;flex-shrink:0;">x</button>
+      </div>
+    `;
+    container.appendChild(wrap);
+    return;
+  }
+
+  // Linha com pesquisa (novo item)
+  const wrap = document.createElement('div');
+  wrap.className = 'mat-row';
+  wrap.id = 'mat-row-' + n;
+
+  let catOpts = '<option value="">Todas as categorias</option>';
+  categorias.forEach(c => { catOpts += `<option value="${c.id}">${c.nome}</option>`; });
+
+  wrap.innerHTML = `
+    <div style="display:flex;gap:8px;align-items:center;">
+      <select class="pt-input pt-select mat-cat-sel" style="max-width:160px;font-size:.82rem;"
+              onchange="pesquisarMaterial(${n})">${catOpts}</select>
+      <div class="mat-search-wrap" style="flex:2;position:relative;">
+        <svg class="mat-search-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0 0 1.415-1.415l-3.868-3.833zm-5.242 1.156a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
+        </svg>
+        <input type="text" class="pt-input mat-search-input" id="mat-search-${n}"
+               placeholder="Pesquisar material..." autocomplete="off"
+               oninput="pesquisarMaterial(${n})" onfocus="mostrarDropdown(${n})">
+        <div class="mat-dropdown" id="mat-dd-${n}"></div>
+        <input type="hidden" name="item_material_id_${n}" id="mat-id-${n}">
+        <input type="hidden" name="item_desc_${n}" id="mat-desc-${n}">
+      </div>
+      <input class="pt-input" name="item_qtd_${n}" type="number" min="0.01" step="0.01"
+             placeholder="Qtd" style="flex:0 0 80px;">
+      <span id="mat-unidade-${n}" style="font-size:.8rem;color:#888;min-width:40px;"></span>
+      <button type="button" onclick="removerItem(${n})"
+              style="background:#f8d7da;color:#58151c;border:none;border-radius:8px;padding:8px 12px;cursor:pointer;font-weight:700;flex-shrink:0;">x</button>
+    </div>
+  `;
+  container.appendChild(wrap);
+
+  document.addEventListener('click', function handler(e) {
+    const dd = document.getElementById('mat-dd-' + n);
+    const inp = document.getElementById('mat-search-' + n);
+    if (dd && inp && !dd.contains(e.target) && e.target !== inp) dd.style.display = 'none';
+  });
+}
+
+function removerItem(n) {
+  const row = document.getElementById('mat-row-' + n);
+  if (row) row.remove();
+  if (document.getElementById('itens-container').children.length === 0) {
+    const empty = document.getElementById('lista-vazia');
+    if (empty) empty.style.display = '';
+    document.getElementById('lista-material').style.alignItems = 'center';
+  }
+}
+
+let timers = {};
+function pesquisarMaterial(n) {
+  clearTimeout(timers[n]);
+  timers[n] = setTimeout(() => _fazerPesquisa(n), 200);
+}
+function mostrarDropdown(n) { _fazerPesquisa(n); }
+
+function _fazerPesquisa(n) {
+  const q = (document.getElementById('mat-search-' + n)?.value || '').trim();
+  const cat = document.querySelector('#mat-row-' + n + ' .mat-cat-sel')?.value || '';
+  const dd = document.getElementById('mat-dd-' + n);
+  if (!dd) return;
+  const url = PESQUISAR_URL + '?q=' + encodeURIComponent(q) + '&categoria=' + encodeURIComponent(cat);
+  fetch(url).then(r => r.json()).then(data => {
+    dd.innerHTML = '';
+    if (!data.resultados.length) {
+      dd.innerHTML = '<div class="mat-dropdown-empty">Sem resultados</div>';
+    } else {
+      data.resultados.forEach(m => {
+        const item = document.createElement('div');
+        item.className = 'mat-dropdown-item';
+        const stockAviso = parseFloat(m.stock) === 0 ? '<span class="stock-low">Sem stock</span>' : '';
+        item.innerHTML = `<span><strong>${m.nome}</strong> ${stockAviso}</span><span class="ref">${m.referencia} · ${m.categoria} · Stock: ${m.stock} ${m.unidade}</span>`;
+        item.onclick = () => selecionarMaterial(n, m);
+        dd.appendChild(item);
+      });
+    }
+    dd.style.display = 'block';
+  });
+}
+
+function selecionarMaterial(n, m) {
+  const row = document.getElementById('mat-row-' + n);
+  const qtdActual = row.querySelector('input[name="item_qtd_' + n + '"]')?.value || '';
+  row.innerHTML = `
+    <input type="hidden" name="item_material_id_${n}" value="${m.id}">
+    <input type="hidden" name="item_desc_${n}" value="${m.referencia} — ${m.nome}">
+    <div style="display:flex;gap:8px;align-items:center;">
+      <code style="background:#f0f4ff;padding:4px 10px;border-radius:6px;font-size:.8rem;flex-shrink:0;">${m.referencia}</code>
+      <span style="flex:1;font-weight:600;font-size:.88rem;">${m.nome}</span>
+      <input class="pt-input" name="item_qtd_${n}" type="number" min="0.01" step="0.01"
+             placeholder="Qtd" style="flex:0 0 80px;" value="${qtdActual}" required>
+      <span style="font-size:.8rem;color:#888;min-width:40px;">${m.unidade}</span>
+      <button type="button" onclick="removerItem(${n})"
+              style="background:#f8d7da;color:#58151c;border:none;border-radius:8px;padding:8px 12px;cursor:pointer;font-weight:700;flex-shrink:0;">x</button>
+    </div>
+  `;
+}
+
+// Pré-carregar itens existentes
+const itensExistentes = {{ itens_json|safe }};
+itensExistentes.forEach(item => adicionarItem(item));
+if (itensExistentes.length === 0) {
+  document.getElementById('lista-vazia').style.display = '';
+}
+</script>
+{% endblock %}

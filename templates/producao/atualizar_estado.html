@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Atualizar Estado da OP — PrimeTool{% endblock %}
+{% block page_title %}Produção{% endblock %}
+{% block sub_header %}
+<div class="sub-header">
+  <a href="{% url 'producao:menu' %}">Produção</a>
+  <span class="sep">›</span>
+  <span>Atualizar Estado da OP</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="pt-card">
+  <div class="pt-card-header"><i class="bi bi-arrow-repeat me-2"></i>Atualizar Estado da Ordem de Produção</div>
+  <div style="padding:0;">
+    <table class="pt-table">
+      <thead><tr>
+        <th>Referência</th><th>Nome</th><th>Cliente</th>
+        <th>Estado Atual</th><th>Novo Estado</th><th></th>
+      </tr></thead>
+      <tbody>
+        {% for op in ordens %}
+        <tr>
+          <td><strong>{{ op.referencia }}</strong></td>
+          <td>{{ op.nome }}</td>
+          <td>{{ op.cliente }}</td>
+          <td><span class="badge-s {{ op.estado }}">{{ op.get_estado_display }}</span></td>
+          <td>
+            <form method="post" style="display:flex;gap:8px;align-items:center;">
+              {% csrf_token %}
+              <input type="hidden" name="op" value="{{ op.pk }}">
+              <select name="estado" class="pt-input pt-select" style="font-size:.82rem;padding:6px 10px;">
+                {% for val, label in estado_choices %}
+                <option value="{{ val }}" {% if op.estado == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+              <button type="submit" class="field-btn" style="padding:7px 16px;font-size:.82rem;">Guardar</button>
+            </form>
+          </td>
+          <td>
+            <a href="{% url 'producao:op-detalhe' op.pk %}" class="field-btn" style="background:var(--bg-secondary,#f4f6fb);color:var(--text-main,#333);padding:7px 14px;font-size:.8rem;text-decoration:none;">Ver</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" style="text-align:center;padding:32px;color:#999;font-style:italic;">Nenhuma ordem de produção ativa.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

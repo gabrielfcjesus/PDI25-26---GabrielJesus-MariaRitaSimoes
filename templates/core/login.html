@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load static %}
+{% block auth_content %}
+<div class="login-page">
+  <div class="login-logo">
+    <img src="{% static 'img/logo.png' %}" alt="PrimeTool"
+         onerror="this.outerHTML='<div style=\'text-align:center\'><i class=\'bi bi-tools\' style=\'font-size:3.5rem;color:#0094ff\'></i><div style=\'font-family:Exo 2,sans-serif;font-weight:800;font-size:1.6rem;color:#0d1b4b\'>PrimeTool</div><div style=\'font-size:.75rem;letter-spacing:3px;color:#0094ff;font-family:Exo 2,sans-serif\'>PRODUCTION</div></div>'">
+  </div>
+
+  {% if messages %}
+    {% for msg in messages %}
+    <div style="max-width:440px;width:100%;padding:0 20px;">
+      <div class="pt-alert danger"><i class="bi bi-exclamation-triangle-fill"></i> {{ msg }}</div>
+    </div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="post" class="login-form" novalidate>
+    {% csrf_token %}
+    <input type="text" name="username" class="login-input" placeholder="Id utilizador" autocomplete="username" required>
+    <input type="password" name="password" class="login-input" placeholder="PASSWORD" autocomplete="current-password" required>
+    <button type="submit" class="login-btn">ENTRAR</button>
+  </form>
+</div>
+{% endblock %}

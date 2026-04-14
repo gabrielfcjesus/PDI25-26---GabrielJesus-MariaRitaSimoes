@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block title %}Nova Obra — PrimeTool{% endblock %}
+{% block page_title %}Planeamento{% endblock %}
+{% block sub_header %}
+<div class="sub-header">
+  <a href="{% url 'planeamento:obras' %}">Planeamento</a>
+  <span class="sep">›</span><span>Nova Obra</span>
+</div>
+{% endblock %}
+{% block content %}
+<div style="max-width:560px;margin:0 auto;">
+  <form method="post">
+    {% csrf_token %}
+    <div class="pt-card">
+      <div class="pt-card-header"><i class="bi bi-building me-2"></i>Nova Obra / Projeto</div>
+      <div style="padding:24px;display:flex;flex-direction:column;gap:14px;">
+
+        <!-- Referência automática + Prioridade -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="pt-field">
+            <label class="pt-label">Referencia</label>
+            <input type="text" class="pt-input" value="{{ proxima_ref }}" readonly
+                   style="background:var(--bg-secondary,#f4f6fb);color:var(--text-muted,#888);cursor:default;">
+          </div>
+          <div class="pt-field">
+            <label class="pt-label">Prioridade</label>
+            <select name="prioridade" class="pt-input pt-select">
+              <option value="normal">Normal</option>
+              <option value="alta">Alta</option>
+              <option value="urgente">Urgente</option>
+              <option value="baixa">Baixa</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Nome -->
+        <div class="pt-field">
+          <label class="pt-label">Nome da Obra</label>
+          <input type="text" name="nome" class="pt-input" placeholder="Ex: Estrutura metalica Armazem Braga" required autofocus>
+        </div>
+
+        <!-- Cliente + botão novo -->
+        <div class="pt-field">
+          <label class="pt-label">Cliente</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <select name="cliente" id="select-cliente" class="pt-input pt-select" required style="flex:1;">
+              <option value="">Selecionar cliente...</option>
+              {% for c in clientes %}<option value="{{ c.pk }}">{{ c.nome }}</option>{% endfor %}
+            </select>
+            <button type="button" class="action-btn" onclick="abrirModalCliente()"
+                    style="white-space:nowrap;">+ Novo</button>
+          </div>
+        </div>
+
+        <!-- Data entrega -->
+        <div class="pt-field">
+          <label class="pt-label">Data Entrega Prevista</label>
+          <input type="date" name="data_entrega_prevista" class="pt-input">
+        </div>
+
+        <button type="submit" class="action-btn green" style="margin-top:8px;">Criar Ordem</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- Modal: Criar Cliente -->
+<div id="modal-cliente" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:12px;padding:28px 32px;width:100%;max-width:420px;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+    <h3 style="margin:0 0 18px;font-size:1rem;font-weight:700;">Novo Cliente</h3>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="pt-field">
+        <label class="pt-label">Nome *</label>
+        <input type="text" id="nc-nome" class="pt-input" placeholder="Nome da empresa ou pessoa">
+      </div>
+      <div class="pt-field">
+        <label class="pt-label">NIF</label>
+        <input type="text" id="nc-nif" class="pt-input" placeholder="NIF">
+      </div>
+      <div class="pt-field">
+        <label class="pt-label">Email</label>
+        <input type="email" id="nc-email" class="pt-input" placeholder="email@empresa.pt">
+      </div>
+      <div class="pt-field">
+        <label class="pt-label">Telefone</label>
+        <input type="text" id="nc-telefone" class="pt-input" placeholder="2xx xxx xxx">
+      </div>
+      <p id="nc-erro" style="color:#c0392b;font-size:.85rem;margin:0;display:none;"></p>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:6px;">
+        <button type="button" class="action-btn" onclick="fecharModalCliente()"
+                style="background:var(--bg-secondary,#f4f6fb);color:var(--text-main,#333);">Cancelar</button>
+        <button type="button" class="action-btn green" onclick="guardarCliente()"
+                id="nc-btn-guardar">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function abrirModalCliente() {
+  document.getElementById('modal-cliente').style.display = 'flex';
+  document.getElementById('nc-nome').focus();
+}
+
+function fecharModalCliente() {
+  document.getElementById('modal-cliente').style.display = 'none';
+  ['nc-nome','nc-nif','nc-email','nc-telefone'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('nc-erro').style.display = 'none';
+}
+
+function guardarCliente() {
+  const nome = document.getElementById('nc-nome').value.trim();
+  const erroEl = document.getElementById('nc-erro');
+  if (!nome) {
+    erroEl.textContent = 'O nome e obrigatorio.';
+    erroEl.style.display = 'block';
+    return;
+  }
+  const btn = document.getElementById('nc-btn-guardar');
+  btn.disabled = true;
+  btn.textContent = 'A guardar...';
+
+  const form = new FormData();
+  form.append('nome', nome);
+  form.append('nif', document.getElementById('nc-nif').value.trim());
+  form.append('email', document.getElementById('nc-email').value.trim());
+  form.append('telefone', document.getElementById('nc-telefone').value.trim());
+  form.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+  fetch('{% url "planeamento:cliente-criar-ajax" %}', { method: 'POST', body: form })
+    .then(r => r.json())
+    .then(data => {
+      if (data.erro) {
+        erroEl.textContent = data.erro;
+        erroEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Guardar';
+        return;
+      }
+      const select = document.getElementById('select-cliente');
+      select.appendChild(new Option(data.nome, data.id, true, true));
+      select.value = data.id;
+      fecharModalCliente();
+    })
+    .catch(() => {
+      erroEl.textContent = 'Erro de ligacao. Tente novamente.';
+      erroEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Guardar';
+    });
+}
+
+document.getElementById('modal-cliente').addEventListener('click', function(e) {
+  if (e.target === this) fecharModalCliente();
+});
+</script>
+{% endblock %}

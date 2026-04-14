@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}{{ material.nome }} — PrimeTool{% endblock %}
+{% block page_title %}Inventário{% endblock %}
+{% block sub_header %}
+<div class="sub-header">
+  <a href="{% url 'armazem:materiais' %}">Inventário</a>
+  <span class="sep">›</span><span>{{ material.referencia }}</span>
+</div>
+{% endblock %}
+{% block content %}
+<div style="display:grid;grid-template-columns:300px 1fr;gap:24px;align-items:start;">
+  <div>
+    <div class="pt-card" style="margin-bottom:16px;">
+      <div class="pt-card-header"><i class="bi bi-box-seam me-2"></i>{{ material.referencia }}</div>
+      <div style="padding:20px;display:flex;flex-direction:column;gap:10px;">
+        <div><div class="pt-label">Material</div><div style="font-weight:700;font-size:1rem;">{{ material.nome }}</div></div>
+        <div><div class="pt-label">Stock Atual</div><div style="font-size:1.8rem;font-weight:800;color:{% if material.stock_baixo %}var(--orange){% else %}var(--green){% endif %};">{{ material.stock_atual }} {{ material.get_unidade_display }}</div></div>
+        <div><div class="pt-label">Stock Mínimo</div><div>{{ material.stock_minimo }} {{ material.get_unidade_display }}</div></div>
+        {% if material.localizacao %}<div><div class="pt-label">Localização</div><div>{{ material.localizacao }}</div></div>{% endif %}
+      </div>
+    </div>
+
+    <div class="pt-card">
+      <div class="pt-card-header"><i class="bi bi-arrow-left-right me-2"></i>Registar Movimento</div>
+      <div style="padding:20px;">
+        <form method="post" style="display:flex;flex-direction:column;gap:12px;">
+          {% csrf_token %}
+          <div class="pt-field">
+            <label class="pt-label">Tipo</label>
+            <select name="tipo" class="pt-input pt-select">
+              <option value="entrada">Entrada</option>
+              <option value="saida">Saída</option>
+              <option value="ajuste">Ajuste</option>
+            </select>
+          </div>
+          <div class="pt-field">
+            <label class="pt-label">Quantidade</label>
+            <input type="number" name="quantidade" step="0.01" class="pt-input" required>
+          </div>
+          <div class="pt-field">
+            <label class="pt-label">Motivo</label>
+            <input type="text" name="motivo" class="pt-input" placeholder="Opcional">
+          </div>
+          <button type="submit" class="action-btn blue" style="padding:12px;">Registar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="pt-card">
+    <div class="pt-card-header"><i class="bi bi-clock-history me-2"></i>Últimos Movimentos</div>
+    <table class="pt-table">
+      <thead><tr><th>Tipo</th><th>Quantidade</th><th>Antes</th><th>Depois</th><th>Motivo</th><th>Data</th></tr></thead>
+      <tbody>
+        {% for m in movimentos %}
+        <tr>
+          <td><span class="badge-s {% if m.tipo == 'entrada' %}aprovado{% elif m.tipo == 'saida' %}problema{% else %}pendente{% endif %}">{{ m.get_tipo_display }}</span></td>
+          <td>{{ m.quantidade }}</td>
+          <td>{{ m.quantidade_anterior }}</td>
+          <td>{{ m.quantidade_posterior }}</td>
+          <td>{{ m.motivo|default:"—" }}</td>
+          <td>{{ m.data|date:"d/m/Y H:i" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" style="text-align:center;padding:24px;color:#999;">Sem movimentos registados.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

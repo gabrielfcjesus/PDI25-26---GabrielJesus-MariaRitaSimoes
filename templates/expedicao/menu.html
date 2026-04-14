@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Expedição — PrimeTool{% endblock %}
+{% block page_title %}Expedição{% endblock %}
+{% block content %}
+<div class="action-list">
+  <a href="{% url 'expedicao:criar' %}" class="action-btn green">Criar Guias de Transporte</a>
+  <a href="{% url 'expedicao:lista' %}" class="action-btn blue">Atualizar Estado</a>
+</div>
+{% endblock %}

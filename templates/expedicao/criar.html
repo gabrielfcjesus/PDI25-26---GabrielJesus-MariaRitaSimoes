@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}Nova Expedição — PrimeTool{% endblock %}
+{% block page_title %}Expedição{% endblock %}
+{% block sub_header %}
+<div class="sub-header">
+  <a href="{% url 'expedicao:menu' %}">Expedição</a>
+  <span class="sep">›</span><span>Criar Guia de Transporte</span>
+</div>
+{% endblock %}
+{% block content %}
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
+
+  <!-- Formulário -->
+  <form method="post" id="form-expedicao">
+    {% csrf_token %}
+    <div class="pt-card" style="margin:0;">
+      <div class="pt-card-header"><i class="bi bi-truck me-2"></i>Nova Expedição</div>
+      <div style="padding:24px;display:flex;flex-direction:column;gap:14px;">
+        <div class="pt-field">
+          <label class="pt-label">Ordem de Produção</label>
+          <select name="ordem" class="pt-input pt-select" required id="select-ordem" onchange="verificarAviso(this)">
+            <option value="">Selecionar ordem...</option>
+            {% for o in ordens %}
+              {% if o.pk in ordens_intermedia_ids %}
+                <option value="{{ o.pk }}" data-intermedia="1">⚠ {{ o.referencia }} — {{ o.nome }} ({{ o.cliente }})</option>
+              {% else %}
+                <option value="{{ o.pk }}">{{ o.referencia }} — {{ o.nome }} ({{ o.cliente }})</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+          <div id="aviso-intermedia-exp" style="display:none;margin-top:8px;padding:8px 12px;background:#fff8e1;border-left:3px solid var(--orange);border-radius:4px;font-size:.8rem;color:#7a5200;">
+            ⚠ Esta OP tem apenas verificação intermédia. Certifique-se que a verificação final será feita oportunamente.
+          </div>
+        </div>
+        <div class="pt-field">
+          <label class="pt-label">Veículo</label>
+          <select name="veiculo" class="pt-input pt-select">
+            <option value="">Selecionar veículo...</option>
+            {% for v in veiculos %}
+            <option value="{{ v.pk }}">{{ v.matricula }} — {{ v.descricao }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="pt-field">
+          <label class="pt-label">Data Prevista de Envio</label>
+          <input type="date" name="data_prevista_envio" class="pt-input">
+        </div>
+        <div class="pt-field">
+          <label class="pt-label">Local / Morada *</label>
+          <div style="position:relative;">
+            <svg style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#aaa;pointer-events:none;"
+                 xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+            </svg>
+            <input type="text" id="morada-input" name="morada_entrega" class="pt-input"
+                   placeholder="Local / Morada *"
+                   style="padding-left:34px;"
+                   oninput="agendarAtualizarMapa()"
+                   required>
+          </div>
+        </div>
+        <div class="pt-field">
+          <label class="pt-label">Observações</label>
+          <textarea name="observacoes" class="pt-input" rows="2" placeholder="Informações adicionais para a montagem..."></textarea>
+        </div>
+        <button type="submit" class="field-btn" style="background:var(--green);margin-top:4px;">Criar Expedição</button>
+      </div>
+    </div>
+  </form>
+
+  <!-- Mapa -->
+  <div class="pt-card" style="margin:0;">
+    <div class="pt-card-header"><i class="bi bi-map me-2"></i>Localização</div>
+    <div style="padding:16px;">
+      <div id="mapa-placeholder" style="display:flex;align-items:center;justify-content:center;height:380px;background:#f4f6fb;border-radius:10px;color:#aaa;font-size:.9rem;flex-direction:column;gap:8px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="#ccc" viewBox="0 0 16 16">
+          <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+        </svg>
+        Introduza uma morada para ver o mapa
+      </div>
+      <iframe id="mapa-iframe"
+              style="display:none;width:100%;height:380px;border:none;border-radius:10px;"
+              allowfullscreen
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade">
+      </iframe>
+      <p style="margin:8px 0 0;font-size:.75rem;color:#aaa;text-align:center;">
+        Powered by Google Maps
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function verificarAviso(sel) {
+  const opt = sel.options[sel.selectedIndex];
+  const aviso = document.getElementById('aviso-intermedia-exp');
+  aviso.style.display = opt.dataset.intermedia ? 'block' : 'none';
+}
+
+let mapaTimer = null;
+
+function agendarAtualizarMapa() {
+  clearTimeout(mapaTimer);
+  mapaTimer = setTimeout(atualizarMapa, 800);
+}
+
+function atualizarMapa() {
+  const morada = document.getElementById('morada-input').value.trim();
+  const placeholder = document.getElementById('mapa-placeholder');
+  const iframe = document.getElementById('mapa-iframe');
+
+  if (!morada) {
+    placeholder.style.display = 'flex';
+    iframe.style.display = 'none';
+    return;
+  }
+
+  const url = 'https://maps.google.com/maps?q=' + encodeURIComponent(morada) + '&output=embed&hl=pt';
+  iframe.src = url;
+  placeholder.style.display = 'none';
+  iframe.style.display = 'block';
+}
+</script>
+{% endblock %}

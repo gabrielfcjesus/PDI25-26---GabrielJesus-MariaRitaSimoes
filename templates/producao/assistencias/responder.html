@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Responder Assistência — PrimeTool{% endblock %}
+{% block page_title %}Planeamento{% endblock %}
+{% block sub_header %}
+<div class="sub-header">
+  <a href="{% url 'planeamento:ops' %}">Planeamento</a>
+  <span class="sep">›</span>
+  <a href="{% url 'producao:assistencias' %}">Pedidos de Assistência</a>
+  <span class="sep">›</span>
+  <span>Responder</span>
+</div>
+{% endblock %}
+{% block content %}
+<div style="display:flex;flex-direction:column;gap:16px;max-width:700px;">
+
+  <!-- Detalhe do pedido -->
+  <div class="pt-card">
+    <div class="pt-card-header"><i class="bi bi-exclamation-triangle me-2"></i>Pedido de Assistência</div>
+    <div style="padding:20px;display:flex;flex-direction:column;gap:10px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <p class="pt-label" style="margin:0 0 4px;">Ordem de Produção</p>
+          <p style="margin:0;font-weight:600;">{{ pedido.ordem.referencia }} — {{ pedido.ordem.nome }}</p>
+        </div>
+        <div>
+          <p class="pt-label" style="margin:0 0 4px;">Cliente</p>
+          <p style="margin:0;">{{ pedido.ordem.cliente }}</p>
+        </div>
+        <div>
+          <p class="pt-label" style="margin:0 0 4px;">Urgência</p>
+          <p style="margin:0;">{{ pedido.get_urgencia_display }}</p>
+        </div>
+        <div>
+          <p class="pt-label" style="margin:0 0 4px;">Pedido por</p>
+          <p style="margin:0;">{{ pedido.criado_por|default:"—" }} em {{ pedido.criado_em|date:"d/m/Y H:i" }}</p>
+        </div>
+      </div>
+      <div>
+        <p class="pt-label" style="margin:0 0 4px;">Descrição do Problema</p>
+        <p style="margin:0;background:#f8faff;border:1px solid #e0e3ee;border-radius:8px;padding:12px;">{{ pedido.descricao }}</p>
+      </div>
+      {% if pedido.resposta %}
+      <div>
+        <p class="pt-label" style="margin:0 0 4px;">Resposta anterior</p>
+        <p style="margin:0;background:#f0fff4;border:1px solid #b7eacb;border-radius:8px;padding:12px;">{{ pedido.resposta }}</p>
+        <p style="margin:4px 0 0;font-size:.78rem;color:#999;">por {{ pedido.respondido_por|default:"—" }} em {{ pedido.respondido_em|date:"d/m/Y H:i"|default:"" }}</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Formulário de resposta -->
+  <div class="pt-card">
+    <div class="pt-card-header"><i class="bi bi-chat-dots me-2"></i>Registar Resposta</div>
+    <form method="post" style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+      {% csrf_token %}
+
+      <div class="pt-field">
+        <label class="pt-label">Estado</label>
+        <select name="estado" class="pt-input pt-select">
+          <option value="em_analise" {% if pedido.estado == 'em_analise' %}selected{% endif %}>Em Análise</option>
+          <option value="resolvido" {% if pedido.estado == 'resolvido' %}selected{% endif %}>Resolvido</option>
+          <option value="pendente" {% if pedido.estado == 'pendente' %}selected{% endif %}>Pendente</option>
+        </select>
+      </div>
+
+      <div class="pt-field">
+        <label class="pt-label">Resposta *</label>
+        <textarea name="resposta" class="pt-input" rows="5" placeholder="Descreva a solução ou o acompanhamento..." required style="resize:vertical;">{{ pedido.resposta }}</textarea>
+      </div>
+
+      <div style="display:flex;gap:10px;">
+        <button type="submit" class="field-btn" style="background:var(--green);">Guardar Resposta</button>
+        <a href="{% url 'producao:assistencias' %}" class="field-btn" style="background:var(--bg-secondary,#f4f6fb);color:var(--text-main,#333);text-decoration:none;">Cancelar</a>
+      </div>
+    </form>
+  </div>
+
+</div>
+{% endblock %}

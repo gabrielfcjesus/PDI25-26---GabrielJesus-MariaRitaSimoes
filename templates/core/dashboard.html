@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Página Inicial — PrimeTool{% endblock %}
+{% block page_title %}Página Inicial{% endblock %}
+
+{% block content %}
+<div class="module-box">
+  <div class="module-grid">
+
+    {% if request.user.is_direcao or request.user.codigo_departamento == 'planeamento' %}
+    <a href="{% url 'planeamento:ops' %}" class="module-btn">Planeamento</a>
+    {% endif %}
+
+    {% if request.user.is_direcao or request.user.codigo_departamento == 'producao' %}
+    <a href="{% url 'producao:menu' %}" class="module-btn">Produção</a>
+    {% endif %}
+
+    {% if request.user.is_direcao or request.user.codigo_departamento == 'qualidade' %}
+    <a href="{% url 'qualidade:menu' %}" class="module-btn">Qualidade</a>
+    {% endif %}
+
+    {% if request.user.is_direcao or request.user.codigo_departamento == 'expedicao' %}
+    <a href="{% url 'expedicao:menu' %}" class="module-btn">Expedição</a>
+    {% endif %}
+
+    {% if request.user.is_direcao or request.user.codigo_departamento == 'montagem' %}
+    <a href="{% url 'montagem:menu' %}" class="module-btn">Montagem</a>
+    {% endif %}
+
+    {% if request.user.is_direcao or request.user.codigo_departamento == 'armazem' %}
+    <a href="{% url 'armazem:materiais' %}" class="module-btn">Inventário</a>
+    {% endif %}
+
+    {% if request.user.is_direcao %}
+    <a href="{% url 'core:relatorios' %}" class="module-btn">Relatórios</a>
+    {% endif %}
+
+    {% if request.user.is_direcao or request.user.codigo_departamento == 'planeamento' %}
+    <a href="{% url 'planeamento:clientes' %}" class="module-btn">Clientes/Fornecedores</a>
+    {% endif %}
+
+    {% if request.user.is_direcao %}
+    <a href="{% url 'core:utilizadores' %}" class="module-btn">Recursos Humanos</a>
+    <a href="/admin/" class="module-btn orange">Admin</a>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

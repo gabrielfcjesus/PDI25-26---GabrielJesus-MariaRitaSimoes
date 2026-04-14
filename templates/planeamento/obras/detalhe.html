@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}{{ ordem.referencia }} — PrimeTool{% endblock %}
+{% block page_title %}Planeamento{% endblock %}
+{% block sub_header %}
+<div class="sub-header">
+  <a href="{% url 'planeamento:obras' %}">Planeamento</a>
+  <span class="sep">›</span><span>{{ ordem.referencia }}</span>
+</div>
+{% endblock %}
+{% block content %}
+<div style="max-width:660px;">
+  <div class="pt-card">
+    <div class="pt-card-header">
+      <span><i class="bi bi-building me-2"></i>{{ ordem.referencia }} — {{ ordem.nome }}</span>
+      <span class="badge-s {{ ordem.estado }}" style="font-size:.7rem;">{{ ordem.get_estado_display }}</span>
+    </div>
+    <div style="padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div><div class="pt-label">Cliente</div><div style="font-weight:600;">{{ ordem.cliente }}</div></div>
+      <div><div class="pt-label">Prioridade</div><div style="font-weight:600;">{{ ordem.get_prioridade_display }}</div></div>
+      <div><div class="pt-label">Entrega Prevista</div><div style="font-weight:600;">{{ ordem.data_entrega_prevista|date:"d/m/Y"|default:"—" }}</div></div>
+      <div><div class="pt-label">Responsável</div><div style="font-weight:600;">{{ ordem.responsavel|default:"—" }}</div></div>
+      {% if ordem.descricao %}<div style="grid-column:span 2;"><div class="pt-label">Descrição</div><div>{{ ordem.descricao }}</div></div>{% endif %}
+    </div>
+    <div style="padding:0 24px 24px;">
+      <a href="{% url 'planeamento:obras' %}" class="action-btn blue" style="display:inline-flex;padding:10px 24px;width:auto;">← Voltar</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Novo Material — PrimeTool{% endblock %}
+{% block page_title %}Novo Material{% endblock %}
+{% block content %}
+<div class="pt-card" style="max-width:680px;">
+  <div class="pt-card-header">
+    <span><i class="bi bi-plus-circle me-2"></i>Adicionar Material</span>
+  </div>
+
+  {% if messages %}
+    {% for msg in messages %}
+      <div style="margin:14px 20px 0;padding:10px 16px;border-radius:8px;font-size:.88rem;
+                  background:{% if msg.tags == 'error' %}#fff0f0;border:1px solid #f5c6c6;color:#c0392b{% else %}#f0fff4;border:1px solid #b7e4c7;color:#1e7e34{% endif %};">
+        {{ msg }}
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="post" style="padding:24px 20px;display:flex;flex-direction:column;gap:18px;">
+    {% csrf_token %}
+
+    <div style="display:grid;grid-template-columns:1fr 2fr;gap:16px;">
+      <div>
+        <label style="font-size:.78rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px;">Referência *</label>
+        <input type="text" name="referencia" required placeholder="Ex: MAT-001"
+               class="pt-input" style="width:100%;">
+      </div>
+      <div>
+        <label style="font-size:.78rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px;">Nome *</label>
+        <input type="text" name="nome" required placeholder="Ex: Chapa de Aço"
+               class="pt-input" style="width:100%;">
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div>
+        <label style="font-size:.78rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px;">Categoria</label>
+        <select name="categoria" class="pt-input pt-select" style="width:100%;">
+          <option value="">— Sem categoria —</option>
+          {% for c in categorias %}
+            <option value="{{ c.pk }}">{{ c.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label style="font-size:.78rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px;">Unidade</label>
+        <select name="unidade" class="pt-input pt-select" style="width:100%;">
+          {% for val, label in unidades %}
+            <option value="{{ val }}" {% if val == 'un' %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+      <div>
+        <label style="font-size:.78rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px;">Stock Atual</label>
+        <input type="number" name="stock_atual" value="0" min="0" step="0.01"
+               class="pt-input" style="width:100%;">
+      </div>
+      <div>
+        <label style="font-size:.78rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px;">Stock Mínimo</label>
+        <input type="number" name="stock_minimo" value="0" min="0" step="0.01"
+               class="pt-input" style="width:100%;">
+      </div>
+      <div>
+        <label style="font-size:.78rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px;">Localização</label>
+        <input type="text" name="localizacao" placeholder="Ex: A-01"
+               class="pt-input" style="width:100%;">
+      </div>
+    </div>
+
+    <div>
+      <label style="font-size:.78rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px;">Descrição</label>
+      <textarea name="descricao" rows="3" placeholder="Descrição opcional..."
+                class="pt-input" style="width:100%;resize:vertical;"></textarea>
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end;padding-top:4px;border-top:1px solid var(--border,#e8eaf0);">
+      <a href="{% url 'armazem:materiais' %}" class="action-btn" style="background:var(--bg-secondary,#f4f6fb);color:var(--text-main,#555);">Cancelar</a>
+      <button type="submit" class="action-btn blue">Guardar Material</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

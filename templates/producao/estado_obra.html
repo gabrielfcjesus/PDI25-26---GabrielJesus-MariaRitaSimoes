@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Estado das OPs — PrimeTool{% endblock %}
+{% block page_title %}Produção{% endblock %}
+{% block sub_header %}
+<div class="sub-header">
+  <a href="{% url 'producao:menu' %}">Produção</a>
+  <span class="sep">›</span><span>Estado das OPs</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="pt-card">
+  <div class="pt-card-header"><i class="bi bi-building me-2"></i>Estado das Ordens de Producao</div>
+  <table class="pt-table">
+    <thead><tr>
+      <th>Referência</th><th>Nome OP</th><th>Cliente</th>
+      <th>Estado</th><th>Entrega Prevista</th>
+    </tr></thead>
+    <tbody>
+      {% for o in ordens %}
+      <tr>
+        <td><strong>{{ o.referencia }}</strong></td>
+        <td>{{ o.nome }}</td>
+        <td>{{ o.cliente }}</td>
+        <td><span class="badge-s {{ o.estado }}">{{ o.get_estado_display }}</span></td>
+        <td>{{ o.data_entrega_prevista|date:"d/m/Y" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" style="text-align:center;padding:32px;color:#999;font-style:italic;">Nenhuma ordem de producao registada.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

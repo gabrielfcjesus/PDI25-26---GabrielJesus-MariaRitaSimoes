@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}RH — PrimeTool{% endblock %}
+{% block page_title %}Recursos Humanos{% endblock %}
+{% block content %}
+<div class="pt-card">
+  <div class="pt-card-header"><span><i class="bi bi-person-badge me-2"></i>Trabalhadores</span></div>
+  <form method="get" style="padding:16px 20px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+    <input type="hidden" name="ordenar" value="{{ ordenar }}">
+    <input type="hidden" name="dir" value="{{ dir }}">
+    <div style="position:relative;flex:1;min-width:200px;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#999" viewBox="0 0 16 16"
+           style="position:absolute;left:10px;top:50%;transform:translateY(-50%);">
+        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.868-3.834zm-5.242 1.156a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/>
+      </svg>
+      <input type="text" name="q" value="{{ q }}" placeholder="Pesquisar por nome..."
+             class="pt-input" style="padding-left:34px;">
+    </div>
+    <select name="departamento" class="pt-input pt-select" style="min-width:200px;" onchange="this.form.submit()">
+      <option value="">Todos os departamentos</option>
+      {% for dep in departamentos %}
+      <option value="{{ dep.pk }}" {% if dep_id == dep.pk|stringformat:"s" %}selected{% endif %}>{{ dep.nome }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="action-btn" style="background:#E8621A;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-weight:600;">Pesquisar</button>
+    {% if q or dep_id %}
+    <a href="?" style="color:#999;font-size:.85rem;white-space:nowrap;">Limpar</a>
+    {% endif %}
+  </form>
+  <table class="pt-table" style="margin-top:12px;">
+    <thead>
+      <tr>
+        {% for col, label in colunas %}
+        {% if ordenar == col %}
+          {% if dir == 'asc' %}<th><a href="?ordenar={{ col }}&dir=desc" style="color:inherit;text-decoration:none;">{{ label }} <i class="bi bi-caret-up-fill" style="font-size:.7rem;"></i></a></th>
+          {% else %}<th><a href="?ordenar={{ col }}&dir=asc" style="color:inherit;text-decoration:none;">{{ label }} <i class="bi bi-caret-down-fill" style="font-size:.7rem;"></i></a></th>
+          {% endif %}
+        {% else %}
+          <th><a href="?ordenar={{ col }}&dir=asc" style="color:inherit;text-decoration:none;opacity:.7;">{{ label }} <i class="bi bi-caret-up-fill" style="font-size:.7rem;opacity:.3;"></i></a></th>
+        {% endif %}
+        {% endfor %}
+        <th>Contrato</th><th>Estado</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in trabalhadores %}
+      <tr>
+        <td><strong>{{ t.nome }}</strong></td>
+        <td>{{ t.departamento }}</td>
+        <td>{{ t.cargo }}</td>
+        <td>{{ t.get_tipo_contrato_display }}</td>
+        <td><span class="badge-s {% if t.estado == 'ativo' %}aprovado{% else %}problema{% endif %}">{{ t.get_estado_display }}</span></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" style="text-align:center;padding:32px;color:#999;font-style:italic;">Nenhum trabalhador registado.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

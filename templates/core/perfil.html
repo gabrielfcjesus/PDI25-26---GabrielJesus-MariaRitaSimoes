@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Perfil — PrimeTool{% endblock %}
+{% block page_title %}O Meu Perfil{% endblock %}
+{% block content %}
+<div style="max-width:480px;">
+  <div class="pt-card">
+    <div class="pt-card-header"><i class="bi bi-person-circle me-2"></i>Informação Pessoal</div>
+    <div style="padding:24px;display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:8px;">
+        <div style="width:64px;height:64px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.6rem;">
+          <i class="bi bi-person-fill"></i>
+        </div>
+        <div>
+          <div style="font-weight:800;font-size:1.1rem;">{{ request.user.get_full_name|default:request.user.username }}</div>
+          <div style="color:#888;font-size:.85rem;">{{ request.user.email|default:"—" }}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div><div class="pt-label">Utilizador</div><div style="font-weight:600;">{{ request.user.username }}</div></div>
+        <div><div class="pt-label">Departamento</div><div style="font-weight:600;">{{ request.user.departamento|default:"—" }}</div></div>
+        <div><div class="pt-label">Cargo</div><div style="font-weight:600;">{{ request.user.cargo|default:"—" }}</div></div>
+        <div><div class="pt-label">Telefone</div><div style="font-weight:600;">{{ request.user.telefone|default:"—" }}</div></div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:10px;">
+        <a href="{% url 'core:home' %}" class="action-btn blue" style="flex:1;padding:12px;">Voltar</a>
+        <a href="{% url 'core:logout' %}" class="action-btn orange" style="flex:1;padding:12px;">Sair</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,292 @@
+{% extends "base.html" %}
+{% block title %}Nova OP — PrimeTool{% endblock %}
+{% block page_title %}Planeamento{% endblock %}
+{% block sub_header %}
+<div class="sub-header">
+  <a href="{% url 'planeamento:ops' %}">Planeamento</a>
+  <span class="sep">›</span><span>Nova OP</span>
+</div>
+{% endblock %}
+{% block content %}
+<form method="post" id="form-op">
+  {% csrf_token %}
+  <div class="form-panel">
+
+    <!-- Coluna esquerda: formulário -->
+    <div class="pt-card" style="margin:0;">
+      <div class="pt-card-header"><i class="bi bi-building me-2"></i>Nova Ordem de Producao</div>
+      <div style="padding:20px;display:flex;flex-direction:column;gap:13px;">
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div class="pt-field">
+            <label class="pt-label">Referencia</label>
+            <input type="text" class="pt-input" value="{{ proxima_ref }}" readonly
+                   style="background:var(--bg-secondary,#f4f6fb);color:var(--text-muted,#888);cursor:default;">
+          </div>
+          <div class="pt-field">
+            <label class="pt-label">Prioridade</label>
+            <select name="prioridade" class="pt-input pt-select">
+              <option value="normal">Normal</option>
+              <option value="alta">Alta</option>
+              <option value="urgente">Urgente</option>
+              <option value="baixa">Baixa</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="pt-field">
+          <label class="pt-label">Nome da OP</label>
+          <input type="text" name="nome" class="pt-input" placeholder="Ex: Estrutura metalica Armazem Braga" required autofocus>
+        </div>
+
+        <div class="pt-field">
+          <label class="pt-label">Cliente</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <select name="cliente" id="select-cliente" class="pt-input pt-select" required style="flex:1;">
+              <option value="">Selecionar cliente...</option>
+              {% for c in clientes %}<option value="{{ c.pk }}">{{ c.nome }}</option>{% endfor %}
+            </select>
+            <button type="button" class="field-btn" onclick="abrirModalCliente()"
+                    style="width:auto;padding:10px 14px;white-space:nowrap;">+ Novo</button>
+          </div>
+        </div>
+
+        <div class="pt-field">
+          <label class="pt-label">Data/Hora de Planeamento</label>
+          <input type="datetime-local" name="data_planeamento" id="data_planeamento" class="pt-input">
+        </div>
+
+        <div class="pt-field">
+          <label class="pt-label">Data Entrega Prevista</label>
+          <input type="date" name="data_entrega_prevista" class="pt-input">
+        </div>
+
+        <button type="submit" class="field-btn" style="background:var(--green);margin-top:4px;">Criar OP</button>
+      </div>
+    </div>
+
+    <!-- Coluna direita: materiais -->
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <button type="button" class="field-btn" onclick="adicionarItem()" style="background:#fff;color:var(--navy);border:2px solid var(--navy);">
+        Inserir Material +
+      </button>
+      <div class="list-panel" id="lista-material">
+        <span class="list-panel-title" id="lista-vazia">Lista Material</span>
+        <div id="itens-container" style="width:100%;display:flex;flex-direction:column;gap:10px;"></div>
+      </div>
+    </div>
+
+  </div>
+</form>
+
+<!-- Modal: Criar Cliente -->
+<div id="modal-cliente" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:12px;padding:28px 32px;width:100%;max-width:420px;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+    <h3 style="margin:0 0 18px;font-size:1rem;font-weight:700;">Novo Cliente</h3>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="pt-field"><label class="pt-label">Nome *</label><input type="text" id="nc-nome" class="pt-input" placeholder="Nome da empresa ou pessoa"></div>
+      <div class="pt-field"><label class="pt-label">NIF</label><input type="text" id="nc-nif" class="pt-input" placeholder="NIF"></div>
+      <div class="pt-field"><label class="pt-label">Email</label><input type="email" id="nc-email" class="pt-input" placeholder="email@empresa.pt"></div>
+      <div class="pt-field"><label class="pt-label">Telefone</label><input type="text" id="nc-telefone" class="pt-input" placeholder="2xx xxx xxx"></div>
+      <p id="nc-erro" style="color:#c0392b;font-size:.85rem;margin:0;display:none;"></p>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:6px;">
+        <button type="button" class="field-btn" onclick="fecharModalCliente()" style="background:var(--bg-secondary,#f4f6fb);color:var(--text-main,#333);">Cancelar</button>
+        <button type="button" class="field-btn" onclick="guardarCliente()" style="background:var(--green);" id="nc-btn-guardar">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.mat-row { background:#f8faff; border:1.5px solid #e0e3ee; border-radius:10px; padding:10px 12px; }
+.mat-search-wrap { position:relative; }
+.mat-search-input { padding-left:34px !important; }
+.mat-search-icon { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#999; pointer-events:none; }
+.mat-dropdown { position:absolute; top:calc(100% + 4px); left:0; right:0; background:#fff; border:1.5px solid #c5cadb; border-radius:8px; max-height:220px; overflow-y:auto; z-index:200; box-shadow:0 4px 16px rgba(0,0,0,.10); display:none; }
+.mat-dropdown-item { padding:9px 14px; cursor:pointer; font-size:.85rem; border-bottom:1px solid #f0f2f8; display:flex; flex-direction:column; gap:2px; }
+.mat-dropdown-item:last-child { border-bottom:none; }
+.mat-dropdown-item:hover { background:#f0f4ff; }
+.mat-dropdown-item .ref { font-size:.75rem; color:#888; }
+.mat-dropdown-item .stock-low { color:#e67e22; font-size:.72rem; }
+.mat-dropdown-empty { padding:12px 14px; color:#999; font-size:.85rem; text-align:center; }
+</style>
+
+<script>
+const PESQUISAR_URL = '{% url "armazem:materiais-pesquisar" %}';
+// Pré-preencher data/hora de planeamento com hora atual
+(function() {
+  const el = document.getElementById('data_planeamento');
+  if (el && !el.value) {
+    const now = new Date();
+    now.setSeconds(0, 0);
+    el.value = now.toISOString().slice(0, 16);
+  }
+})();
+let itemCount = 0;
+let categorias = {{ categorias_json|safe }};
+
+function adicionarItem() {
+  itemCount++;
+  const empty = document.getElementById('lista-vazia');
+  if (empty) empty.style.display = 'none';
+  document.getElementById('lista-material').style.alignItems = 'flex-start';
+
+  const container = document.getElementById('itens-container');
+  const wrap = document.createElement('div');
+  wrap.className = 'mat-row';
+  wrap.id = 'mat-row-' + itemCount;
+  const n = itemCount;
+
+  // Opções de categoria
+  let catOpts = '<option value="">Todas as categorias</option>';
+  categorias.forEach(c => { catOpts += `<option value="${c.id}">${c.nome}</option>`; });
+
+  wrap.innerHTML = `
+    <div style="display:flex;gap:8px;align-items:center;">
+      <!-- Categoria -->
+      <select class="pt-input pt-select mat-cat-sel" style="max-width:160px;font-size:.82rem;"
+              onchange="pesquisarMaterial(${n})">${catOpts}</select>
+      <!-- Pesquisa -->
+      <div class="mat-search-wrap" style="flex:2;position:relative;">
+        <svg class="mat-search-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0 0 1.415-1.415l-3.868-3.833zm-5.242 1.156a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
+        </svg>
+        <input type="text" class="pt-input mat-search-input" id="mat-search-${n}"
+               placeholder="Pesquisar material..."
+               autocomplete="off"
+               oninput="pesquisarMaterial(${n})"
+               onfocus="mostrarDropdown(${n})">
+        <div class="mat-dropdown" id="mat-dd-${n}"></div>
+        <!-- campo oculto com o id do material selecionado -->
+        <input type="hidden" name="item_material_id_${n}" id="mat-id-${n}">
+        <input type="hidden" name="item_desc_${n}" id="mat-desc-${n}">
+      </div>
+      <!-- Qtd -->
+      <input class="pt-input" name="item_qtd_${n}" type="number" min="0.01" step="0.01"
+             placeholder="Qtd" style="flex:0 0 80px;">
+      <!-- Unidade (preenchida ao selecionar) -->
+      <span id="mat-unidade-${n}" style="font-size:.8rem;color:#888;min-width:40px;"></span>
+      <!-- Remover -->
+      <button type="button" onclick="removerItem(${n})"
+              style="background:#f8d7da;color:#58151c;border:none;border-radius:8px;padding:8px 12px;cursor:pointer;font-weight:700;flex-shrink:0;">x</button>
+    </div>
+    <!-- Material selecionado: badge -->
+    <div id="mat-badge-${n}" style="display:none;margin-top:6px;font-size:.82rem;color:var(--navy);font-weight:600;"></div>
+  `;
+  container.appendChild(wrap);
+
+  // Fechar dropdown ao clicar fora
+  document.addEventListener('click', function handler(e) {
+    const dd = document.getElementById('mat-dd-' + n);
+    const inp = document.getElementById('mat-search-' + n);
+    if (dd && inp && !dd.contains(e.target) && e.target !== inp) {
+      dd.style.display = 'none';
+    }
+  });
+}
+
+function removerItem(n) {
+  const row = document.getElementById('mat-row-' + n);
+  if (row) row.remove();
+  if (document.getElementById('itens-container').children.length === 0) {
+    const empty = document.getElementById('lista-vazia');
+    if (empty) empty.style.display = '';
+    document.getElementById('lista-material').style.alignItems = 'center';
+  }
+}
+
+let timers = {};
+function pesquisarMaterial(n) {
+  clearTimeout(timers[n]);
+  timers[n] = setTimeout(() => _fazerPesquisa(n), 200);
+}
+
+function mostrarDropdown(n) {
+  _fazerPesquisa(n);
+}
+
+function _fazerPesquisa(n) {
+  const q = (document.getElementById('mat-search-' + n)?.value || '').trim();
+  const cat = document.querySelector('#mat-row-' + n + ' .mat-cat-sel')?.value || '';
+  const dd = document.getElementById('mat-dd-' + n);
+  if (!dd) return;
+
+  const url = PESQUISAR_URL + '?q=' + encodeURIComponent(q) + '&categoria=' + encodeURIComponent(cat);
+  fetch(url)
+    .then(r => r.json())
+    .then(data => {
+      dd.innerHTML = '';
+      if (!data.resultados.length) {
+        dd.innerHTML = '<div class="mat-dropdown-empty">Sem resultados</div>';
+      } else {
+        data.resultados.forEach(m => {
+          const item = document.createElement('div');
+          item.className = 'mat-dropdown-item';
+          const stockAviso = parseFloat(m.stock) === 0
+            ? '<span class="stock-low">Sem stock</span>'
+            : (parseFloat(m.stock) > 0 ? '' : '');
+          item.innerHTML = `<span><strong>${m.nome}</strong> ${stockAviso}</span><span class="ref">${m.referencia} · ${m.categoria} · Stock: ${m.stock} ${m.unidade}</span>`;
+          item.onclick = () => selecionarMaterial(n, m);
+          dd.appendChild(item);
+        });
+      }
+      dd.style.display = 'block';
+    });
+}
+
+function selecionarMaterial(n, m) {
+  // Guardar valores ocultos
+  document.getElementById('mat-id-' + n).value = m.id;
+  document.getElementById('mat-desc-' + n).value = m.referencia + ' — ' + m.nome;
+
+  // Substituir a linha de pesquisa pela linha simplificada
+  const row = document.getElementById('mat-row-' + n);
+  const qtdActual = row.querySelector('input[name="item_qtd_' + n + '"]')?.value || '';
+  row.innerHTML = `
+    <input type="hidden" name="item_material_id_${n}" value="${m.id}">
+    <input type="hidden" name="item_desc_${n}" value="${m.referencia} — ${m.nome}">
+    <div style="display:flex;gap:8px;align-items:center;">
+      <code style="background:#f0f4ff;padding:4px 10px;border-radius:6px;font-size:.8rem;flex-shrink:0;">${m.referencia}</code>
+      <span style="flex:1;font-weight:600;font-size:.88rem;">${m.nome}</span>
+      <input class="pt-input" name="item_qtd_${n}" type="number" min="0.01" step="0.01"
+             placeholder="Qtd" style="flex:0 0 80px;" value="${qtdActual}" required>
+      <span style="font-size:.8rem;color:#888;min-width:40px;">${m.unidade}</span>
+      <button type="button" onclick="removerItem(${n})"
+              style="background:#f8d7da;color:#58151c;border:none;border-radius:8px;padding:8px 12px;cursor:pointer;font-weight:700;flex-shrink:0;">x</button>
+    </div>
+  `;
+}
+
+// Modal cliente
+function abrirModalCliente() { document.getElementById('modal-cliente').style.display = 'flex'; document.getElementById('nc-nome').focus(); }
+function fecharModalCliente() {
+  document.getElementById('modal-cliente').style.display = 'none';
+  ['nc-nome','nc-nif','nc-email','nc-telefone'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('nc-erro').style.display = 'none';
+}
+function guardarCliente() {
+  const nome = document.getElementById('nc-nome').value.trim();
+  const erroEl = document.getElementById('nc-erro');
+  if (!nome) { erroEl.textContent = 'O nome e obrigatorio.'; erroEl.style.display = 'block'; return; }
+  const btn = document.getElementById('nc-btn-guardar');
+  btn.disabled = true; btn.textContent = 'A guardar...';
+  const form = new FormData();
+  form.append('nome', nome);
+  form.append('nif', document.getElementById('nc-nif').value.trim());
+  form.append('email', document.getElementById('nc-email').value.trim());
+  form.append('telefone', document.getElementById('nc-telefone').value.trim());
+  form.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+  fetch('{% url "planeamento:cliente-criar-ajax" %}', { method: 'POST', body: form })
+    .then(r => r.json())
+    .then(data => {
+      if (data.erro) { erroEl.textContent = data.erro; erroEl.style.display = 'block'; btn.disabled = false; btn.textContent = 'Guardar'; return; }
+      const select = document.getElementById('select-cliente');
+      select.appendChild(new Option(data.nome, data.id, true, true));
+      select.value = data.id;
+      fecharModalCliente();
+    })
+    .catch(() => { erroEl.textContent = 'Erro de ligacao.'; erroEl.style.display = 'block'; btn.disabled = false; btn.textContent = 'Guardar'; });
+}
+document.getElementById('modal-cliente').addEventListener('click', function(e) { if (e.target === this) fecharModalCliente(); });
+</script>
+{% endblock %}

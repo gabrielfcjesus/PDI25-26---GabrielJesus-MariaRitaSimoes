@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Inventário — PrimeTool{% endblock %}
+{% block page_title %}Inventário{% endblock %}
+{% block content %}
+<div class="pt-card">
+  <div class="pt-card-header">
+    <span><i class="bi bi-box-seam me-2"></i>Materiais em Stock</span>
+  </div>
+
+  <!-- Barra de filtros -->
+  <form method="get" style="display:flex;gap:10px;align-items:center;padding:14px 20px;border-bottom:1px solid var(--border,#e8eaf0);flex-wrap:wrap;">
+    <!-- Pesquisa -->
+    <div style="display:flex;align-items:center;gap:0;flex:1;min-width:200px;background:#f4f6fb;border:1.5px solid var(--border,#e0e3ee);border-radius:8px;padding:0 12px;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#999" viewBox="0 0 16 16" style="flex-shrink:0;">
+        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0 0 1.415-1.415l-3.868-3.833zm-5.242 1.156a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
+      </svg>
+      <input type="text" name="q" value="{{ q }}" placeholder="Pesquisar por nome ou referencia..."
+             style="border:none;background:transparent;padding:9px 10px;font-family:var(--font);font-size:.88rem;outline:none;width:100%;">
+    </div>
+
+    <!-- Dropdown categoria -->
+    <select name="categoria" class="pt-input pt-select" style="min-width:200px;max-width:260px;"
+            onchange="this.form.submit()">
+      <option value="">Todas as categorias</option>
+      {% for c in categorias %}
+        <option value="{{ c.pk }}" {% if categoria_sel == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.nome }}</option>
+      {% endfor %}
+    </select>
+
+    <!-- Botão pesquisar -->
+    <button type="submit" class="action-btn orange" style="white-space:nowrap;">Pesquisar</button>
+    <a href="{% url 'armazem:material-criar' %}" class="action-btn blue" style="white-space:nowrap;margin-left:auto;">+ Novo Material</a>
+
+    <!-- Limpar filtros -->
+    {% if q or categoria_sel %}
+    <a href="{% url 'armazem:materiais' %}" class="action-btn" style="background:var(--bg-secondary,#f4f6fb);color:var(--text-main,#555);white-space:nowrap;">Limpar</a>
+    {% endif %}
+  </form>
+
+  <table class="pt-table">
+    <thead><tr><th>Referência</th><th>Material</th><th>Categoria</th><th>Stock</th><th>Unidade</th><th>Estado</th></tr></thead>
+    <tbody>
+      {% for m in materiais %}
+      <tr>
+        <td><code style="background:#f0f4ff;padding:2px 8px;border-radius:5px;font-size:.8rem;">{{ m.referencia }}</code></td>
+        <td><a href="{% url 'armazem:material-detalhe' m.pk %}" style="color:var(--blue);font-weight:600;text-decoration:none;">{{ m.nome }}</a></td>
+        <td>{{ m.categoria|default:"—" }}</td>
+        <td><strong>{{ m.stock_atual }}</strong></td>
+        <td>{{ m.get_unidade_display }}</td>
+        <td>
+          {% if m.stock_atual == 0 %}<span class="badge-s cancelada">Sem Stock</span>
+          {% elif m.stock_baixo %}<span class="badge-s problema">Stock Baixo</span>
+          {% else %}<span class="badge-s aprovado">OK</span>{% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" style="text-align:center;padding:32px;color:#999;font-style:italic;">Nenhum material encontrado.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

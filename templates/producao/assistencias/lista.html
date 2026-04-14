@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Pedidos de Assistência — PrimeTool{% endblock %}
+{% block page_title %}Planeamento{% endblock %}
+{% block sub_header %}
+<div class="sub-header">
+  <a href="{% url 'planeamento:ops' %}">Planeamento</a>
+  <span class="sep">›</span>
+  <span>Pedidos de Assistência</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="pt-card">
+  <div class="pt-card-header"><i class="bi bi-exclamation-triangle me-2"></i>Pedidos de Assistência</div>
+  <div style="padding:0;">
+    <table class="pt-table">
+      <thead><tr>
+        <th>OP</th><th>Cliente</th><th>Urgência</th>
+        <th>Descrição</th><th>Pedido por</th><th>Data</th>
+        <th>Estado</th><th></th>
+      </tr></thead>
+      <tbody>
+        {% for p in pedidos %}
+        <tr>
+          <td><strong>{{ p.ordem.referencia }}</strong></td>
+          <td>{{ p.ordem.cliente }}</td>
+          <td>
+            {% if p.urgencia == 'urgente' %}
+              <span class="badge-s cancelada">{{ p.get_urgencia_display }}</span>
+            {% elif p.urgencia == 'alta' %}
+              <span class="badge-s pausada">{{ p.get_urgencia_display }}</span>
+            {% else %}
+              <span class="badge-s planeamento">{{ p.get_urgencia_display }}</span>
+            {% endif %}
+          </td>
+          <td style="max-width:280px;">{{ p.descricao|truncatechars:80 }}</td>
+          <td>{{ p.criado_por|default:"—" }}</td>
+          <td>{{ p.criado_em|date:"d/m/Y H:i" }}</td>
+          <td>
+            {% if p.estado == 'resolvido' %}
+              <span class="badge-s concluida">{{ p.get_estado_display }}</span>
+            {% elif p.estado == 'em_analise' %}
+              <span class="badge-s em_producao">{{ p.get_estado_display }}</span>
+            {% else %}
+              <span class="badge-s planeamento">{{ p.get_estado_display }}</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url 'producao:assistencia-responder' p.pk %}" class="field-btn" style="padding:6px 14px;font-size:.8rem;text-decoration:none;">Responder</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" style="text-align:center;padding:32px;color:#999;font-style:italic;">Nenhum pedido de assistência registado.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

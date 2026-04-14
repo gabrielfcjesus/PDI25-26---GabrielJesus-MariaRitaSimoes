@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Expedição — PrimeTool{% endblock %}
+{% block page_title %}Expedição{% endblock %}
+{% block sub_header %}
+<div class="sub-header">
+  <a href="{% url 'expedicao:menu' %}">Expedição</a>
+  <span class="sep">›</span>
+  <span>Atualizar Estado</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="pt-card">
+  <div class="pt-card-header">
+    <span><i class="bi bi-truck me-2"></i>Expedições</span>
+    <a href="{% url 'expedicao:criar' %}" style="background:var(--green);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-family:var(--font);font-weight:700;font-size:.78rem;letter-spacing:.5px;text-decoration:none;text-transform:uppercase;">+ Nova Expedição</a>
+  </div>
+  <table class="pt-table">
+    <thead><tr>
+      <th>Referência</th><th>Ordem</th><th>Transportadora</th>
+      <th>Estado</th><th>Data Envio</th>
+    </tr></thead>
+    <tbody>
+      {% for e in expedicoes %}
+      <tr>
+        <td><strong>{{ e.referencia }}</strong></td>
+        <td>{{ e.ordem }}</td>
+        <td>{{ e.transportadora|default:"—" }}</td>
+        <td><span class="badge-s expedicao">{{ e.get_estado_display }}</span></td>
+        <td>{{ e.data_prevista_envio|date:"d/m/Y"|default:"—" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" style="text-align:center;padding:32px;color:#999;font-style:italic;">Nenhuma expedição registada.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

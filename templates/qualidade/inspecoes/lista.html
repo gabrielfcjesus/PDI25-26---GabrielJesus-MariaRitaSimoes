@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Verificações — PrimeTool{% endblock %}
+{% block page_title %}Qualidade{% endblock %}
+{% block sub_header %}
+<div class="sub-header">
+  <a href="{% url 'qualidade:menu' %}">Qualidade</a>
+  <span class="sep">›</span>
+  <span>Consultar Verificações</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="pt-card">
+  <div class="pt-card-header">
+    <span><i class="bi bi-patch-check me-2"></i>Inspeções de Qualidade</span>
+    <a href="{% url 'qualidade:verificar' %}" style="background:var(--green);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-family:var(--font);font-weight:700;font-size:.78rem;letter-spacing:.5px;text-decoration:none;text-transform:uppercase;">+ Nova Verificação</a>
+  </div>
+  <table class="pt-table">
+    <thead><tr>
+      <th>Ordem</th><th>OP</th><th>Tipo</th><th>Inspector</th>
+      <th>Resultado</th><th>Data</th>
+    </tr></thead>
+    <tbody>
+      {% for i in inspecoes %}
+      <tr>
+        <td><a href="{% url 'qualidade:op-detalhe' i.ordem.pk %}" style="color:var(--blue);font-weight:700;text-decoration:none;">{{ i.ordem.referencia }}</a></td>
+        <td><a href="{% url 'qualidade:op-detalhe' i.ordem.pk %}" style="color:var(--navy);text-decoration:none;">{{ i.ordem.nome }}</a></td>
+        <td>
+          {% if i.tipo == 'intermedia' %}
+            <span class="badge-s em_preparacao">Intermédia</span>
+          {% else %}
+            <span class="badge-s concluida">Final</span>
+          {% endif %}
+        </td>
+        <td>{{ i.inspector|default:"—" }}</td>
+        <td><span class="badge-s {{ i.resultado }}">{{ i.get_resultado_display }}</span></td>
+        <td>{{ i.data|date:"d/m/Y H:i" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" style="text-align:center;padding:32px;color:#999;font-style:italic;">Nenhuma inspeção registada.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

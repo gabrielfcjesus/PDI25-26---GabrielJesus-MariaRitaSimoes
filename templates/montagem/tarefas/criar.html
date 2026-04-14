@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+{% block title %}Nova Tarefa — PrimeTool{% endblock %}
+{% block page_title %}Montagem{% endblock %}
+{% block sub_header %}
+<div class="sub-header">
+  <a href="{% url 'montagem:menu' %}">Montagem</a>
+  <span class="sep">›</span><span>Nova Tarefa</span>
+</div>
+{% endblock %}
+{% block content %}
+<div style="max-width:560px;margin:0 auto;">
+  <form method="post">
+    {% csrf_token %}
+    <div class="pt-card">
+      <div class="pt-card-header"><i class="bi bi-hammer me-2"></i>Nova Tarefa de Montagem</div>
+      <div style="padding:24px;display:flex;flex-direction:column;gap:14px;">
+        <div class="pt-field">
+          <label class="pt-label">Ordem de Produção</label>
+          <select name="ordem" class="pt-input pt-select" required>
+            <option value="">Selecionar ordem...</option>
+            {% for o in ordens %}<option value="{{ o.pk }}">{{ o.referencia }} — {{ o.nome }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="pt-field">
+          <label class="pt-label">Título da Tarefa</label>
+          <input type="text" name="titulo" class="pt-input" required>
+        </div>
+        <div class="pt-field">
+          <label class="pt-label">Descrição</label>
+          <textarea name="descricao" class="pt-input" rows="3"></textarea>
+        </div>
+        <div class="pt-field">
+          <label class="pt-label">Tempo de Montagem</label>
+          <!-- hidden inputs enviados com o formulário -->
+          <input type="hidden" name="tempo_hh" id="inp_hh" value="0">
+          <input type="hidden" name="tempo_mm" id="inp_mm" value="0">
+          <input type="hidden" name="tempo_ss" id="inp_ss" value="0">
+
+          <!-- display do cronómetro -->
+          <div style="display:flex;align-items:center;gap:8px;background:#f0fff4;border:1.5px solid #a5d6a7;border-radius:10px;padding:10px 18px;width:fit-content;">
+            <span id="crono-dot" style="width:10px;height:10px;border-radius:50%;background:#2e7d32;display:inline-block;flex-shrink:0;"></span>
+            <span id="crono-display" style="font-family:monospace;font-size:1.4rem;font-weight:700;color:#1b5e20;min-width:90px;letter-spacing:1px;">00:00:00</span>
+          </div>
+
+          <!-- botões de controlo -->
+          <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+            <button type="button" id="btn-iniciar"
+              style="background:#2e7d32;color:#fff;border:none;padding:9px 20px;border-radius:8px;font-family:inherit;font-weight:700;font-size:.82rem;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;">
+              &#9654; Iniciar
+            </button>
+            <button type="button" id="btn-pausar" style="display:none;background:#f4b97f;color:#7a3e00;border:none;padding:9px 20px;border-radius:8px;font-family:inherit;font-weight:700;font-size:.82rem;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;">
+              &#9646;&#9646; Pausar
+            </button>
+            <button type="button" id="btn-retomar" style="display:none;background:#2e7d32;color:#fff;border:none;padding:9px 20px;border-radius:8px;font-family:inherit;font-weight:700;font-size:.82rem;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;">
+              &#9654; Retomar
+            </button>
+            <button type="button" id="btn-terminar" style="display:none;background:#e53935;color:#fff;border:none;padding:9px 20px;border-radius:8px;font-family:inherit;font-weight:700;font-size:.82rem;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;">
+              &#9632; Terminar
+            </button>
+          </div>
+        </div>
+        <div class="pt-field">
+          <label class="pt-label">Colaboradores na Carrinha</label>
+          <div style="border:1px solid #d1d5db;border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto;background:#fff;">
+            {% for u in colaboradores_disponiveis %}
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;font-weight:500;color:#1e3a5f;">
+              <input type="checkbox" name="colaboradores" value="{{ u.pk }}"
+                style="width:16px;height:16px;accent-color:#e67e22;cursor:pointer;">
+              {{ u.get_full_name|default:u.username }}
+              {% if u.departamento %}<span style="font-size:11px;color:#6b7280;font-weight:400;">({{ u.departamento }})</span>{% endif %}
+            </label>
+            {% empty %}
+            <span style="color:#6b7280;font-size:13px;">Nenhum colaborador disponível.</span>
+            {% endfor %}
+          </div>
+        </div>
+        <button type="submit" class="action-btn green" style="margin-top:8px;">Criar Tarefa</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<style>
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+  .crono-running { animation: blink 1s infinite; }
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
+</style>
+
+<script>
+(function(){
+  let seconds = 0;
+  let interval = null;
+  let running = false;
+
+  const display = document.getElementById('crono-display');
+  const dot     = document.getElementById('crono-dot');
+  const btnIni  = document.getElementById('btn-iniciar');
+  const btnPau  = document.getElementById('btn-pausar');
+  const btnRet  = document.getElementById('btn-retomar');
+  const btnTer  = document.getElementById('btn-terminar');
+  const inpHH   = document.getElementById('inp_hh');
+  const inpMM   = document.getElementById('inp_mm');
+  const inpSS   = document.getElementById('inp_ss');
+
+  function fmt(n){ return String(n).padStart(2,'0'); }
+
+  function updateDisplay(){
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    display.textContent = fmt(h) + ':' + fmt(m) + ':' + fmt(s);
+    inpHH.value = h; inpMM.value = m; inpSS.value = s;
+  }
+
+  function tick(){ seconds++; updateDisplay(); }
+
+  function startTimer(){
+    interval = setInterval(tick, 1000);
+    running = true;
+    dot.classList.add('crono-running');
+  }
+
+  function stopTimer(){
+    clearInterval(interval);
+    interval = null;
+    running = false;
+    dot.classList.remove('crono-running');
+  }
+
+  // substitui o span por 3 inputs editáveis enquanto está em pausa
+  function showEditableInputs(){
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    const style = 'width:44px;background:transparent;border:none;border-bottom:2px solid #2e7d32;outline:none;font-family:monospace;font-size:1.4rem;font-weight:700;color:#1b5e20;text-align:center;';
+    display.innerHTML =
+      '<input id="edit_hh" type="number" min="0" max="99" value="'+h+'" style="'+style+'" onfocus="this.select()">' +
+      '<span style="font-family:monospace;font-size:1.4rem;font-weight:700;color:#1b5e20;">:</span>' +
+      '<input id="edit_mm" type="number" min="0" max="59" value="'+fmt(m)+'" style="'+style+'" onfocus="this.select()">' +
+      '<span style="font-family:monospace;font-size:1.4rem;font-weight:700;color:#1b5e20;">:</span>' +
+      '<input id="edit_ss" type="number" min="0" max="59" value="'+fmt(s)+'" style="'+style+'" onfocus="this.select()">';
+    display.style.minWidth = '';
+  }
+
+  function readEditableInputs(){
+    const h = parseInt(document.getElementById('edit_hh')?.value) || 0;
+    const m = Math.min(59, parseInt(document.getElementById('edit_mm')?.value) || 0);
+    const s = Math.min(59, parseInt(document.getElementById('edit_ss')?.value) || 0);
+    seconds = h * 3600 + m * 60 + s;
+  }
+
+  function hideEditableInputs(){
+    readEditableInputs();
+    display.innerHTML = '';
+    display.textContent = '';
+    display.style.minWidth = '90px';
+    updateDisplay();
+  }
+
+  btnIni.addEventListener('click', function(){
+    startTimer();
+    btnIni.style.display = 'none';
+    btnPau.style.display = '';
+    btnTer.style.display = '';
+  });
+
+  btnPau.addEventListener('click', function(){
+    stopTimer();
+    showEditableInputs();
+    btnPau.style.display = 'none';
+    btnRet.style.display = '';
+  });
+
+  btnRet.addEventListener('click', function(){
+    hideEditableInputs();
+    startTimer();
+    btnRet.style.display = 'none';
+    btnPau.style.display = '';
+  });
+
+  btnTer.addEventListener('click', function(){
+    if(document.getElementById('edit_hh')) readEditableInputs();
+    stopTimer();
+    hideEditableInputs();
+    dot.style.background = '#e53935';
+    btnPau.style.display = 'none';
+    btnRet.style.display = 'none';
+    btnTer.style.display = 'none';
+    btnIni.style.display = 'none';
+    // mostra o tempo final em vermelho
+    display.style.color = '#b71c1c';
+    document.querySelector('#crono-dot').style.background = '#e53935';
+  });
+})();
+</script>
+{% endblock %}

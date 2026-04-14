@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Verificar OP — PrimeTool{% endblock %}
+{% block page_title %}Qualidade{% endblock %}
+{% block sub_header %}
+<div class="sub-header">
+  <a href="{% url 'qualidade:menu' %}">Qualidade</a>
+  <span class="sep">›</span><span>Verificar OP</span>
+</div>
+{% endblock %}
+{% block content %}
+<div style="max-width:560px;margin:0 auto;">
+  <form method="post">
+    {% csrf_token %}
+    <div class="pt-card">
+      <div class="pt-card-header"><i class="bi bi-patch-check me-2"></i>Nova Verificação de Qualidade</div>
+      <div style="padding:24px;display:flex;flex-direction:column;gap:14px;">
+        <div class="pt-field">
+          <label class="pt-label">Ordem de Produção</label>
+          <select name="ordem" class="pt-input pt-select" required id="select-op" onchange="aoMudarOP(this)">
+            <option value="">Selecionar ordem...</option>
+            {% for op in ordens %}
+              {% if op.estado == 'em_producao' %}
+                <option value="{{ op.pk }}" data-estado="em_producao">🔧 {{ op.referencia }} | {{ op.nome }} — Em Produção</option>
+              {% else %}
+                <option value="{{ op.pk }}" data-estado="qualidade">✔ {{ op.referencia }} | {{ op.nome }} — Em Qualidade</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+        </div>
+        <div class="pt-field">
+          <label class="pt-label">Tipo de Verificação</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;" id="tipo-selector">
+            <label style="display:flex;align-items:center;gap:10px;padding:12px 16px;border:2px solid var(--border,#e0e3ee);border-radius:8px;cursor:pointer;transition:border-color .15s;" id="lbl-intermedia">
+              <input type="radio" name="tipo" value="intermedia" style="accent-color:var(--orange);">
+              <span>
+                <div style="font-weight:700;font-size:.88rem;color:var(--navy);">Intermédia</div>
+                <div style="font-size:.75rem;color:#888;">OP permanece em Qualidade</div>
+              </span>
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;padding:12px 16px;border:2px solid var(--blue);border-radius:8px;cursor:pointer;background:#f0f8ff;" id="lbl-final">
+              <input type="radio" name="tipo" value="final" checked style="accent-color:var(--blue);">
+              <span>
+                <div style="font-weight:700;font-size:.88rem;color:var(--navy);">Final</div>
+                <div style="font-size:.75rem;color:#888;">Determina avanço da OP</div>
+              </span>
+            </label>
+          </div>
+          <div id="aviso-intermedia" style="display:none;margin-top:8px;padding:8px 12px;background:#fff8e1;border-left:3px solid var(--orange);border-radius:4px;font-size:.8rem;color:#7a5200;">
+            A OP permanece em Qualidade. Se aprovada, ficará disponível na Expedição com aviso de "apenas verificação intermédia".
+          </div>
+        </div>
+        <div class="pt-field">
+          <label class="pt-label">Resultado</label>
+          <select name="resultado" class="pt-input pt-select" required>
+            <option value="aprovado">✔ Aprovado</option>
+            <option value="reprovado">✘ Reprovado</option>
+            <option value="aprovado_condicional">⚠ Aprovado Condicionalmente</option>
+          </select>
+        </div>
+        <div class="pt-field">
+          <label class="pt-label">Observações</label>
+          <textarea name="observacoes" class="pt-input" rows="3"></textarea>
+        </div>
+        <div class="pt-field">
+          <label class="pt-label">Não Conformidades</label>
+          <textarea name="nao_conformidades" class="pt-input" rows="2"></textarea>
+        </div>
+        <button type="submit" class="action-btn green" style="margin-top:8px;">Registar Verificação</button>
+      </div>
+    </div>
+  </form>
+</div>
+<script>
+(function(){
+  const radios   = document.querySelectorAll('input[name="tipo"]');
+  const lblInt   = document.getElementById('lbl-intermedia');
+  const lblFin   = document.getElementById('lbl-final');
+  const radioInt = document.querySelector('input[value="intermedia"]');
+  const radioFin = document.querySelector('input[value="final"]');
+  const aviso    = document.getElementById('aviso-intermedia');
+
+  function aplicarEstiloTipo(val) {
+    if (val === 'intermedia') {
+      lblInt.style.borderColor = 'var(--orange)';
+      lblInt.style.background  = '#fff8f0';
+      lblFin.style.borderColor = 'var(--border,#e0e3ee)';
+      lblFin.style.background  = '';
+      aviso.style.display = 'block';
+    } else {
+      lblFin.style.borderColor = 'var(--blue)';
+      lblFin.style.background  = '#f0f8ff';
+      lblInt.style.borderColor = 'var(--border,#e0e3ee)';
+      lblInt.style.background  = '';
+      aviso.style.display = 'none';
+    }
+  }
+
+  radios.forEach(r => r.addEventListener('change', function(){ aplicarEstiloTipo(this.value); }));
+
+  window.aoMudarOP = function(sel) {
+    const opt = sel.options[sel.selectedIndex];
+    if (opt.dataset.estado === 'em_producao') {
+      // OPs em produção → forçar intermédia, desactivar final
+      radioInt.checked  = true;
+      radioFin.disabled = true;
+      lblFin.style.opacity = '0.4';
+      lblFin.style.cursor  = 'not-allowed';
+      aplicarEstiloTipo('intermedia');
+    } else {
+      radioFin.disabled = false;
+      lblFin.style.opacity = '';
+      lblFin.style.cursor  = '';
+      // Restaura "Final" como padrão se estava desativado
+      if (!radioInt.checked) {
+        radioFin.checked = true;
+        aplicarEstiloTipo('final');
+      }
+    }
+  };
+})();
+</script>
+{% endblock %}

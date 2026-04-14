@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Produção — PrimeTool{% endblock %}
+{% block page_title %}Produção{% endblock %}
+{% block content %}
+<div class="action-list">
+  <a href="{% url 'producao:ordens' %}" class="action-btn blue">Consultar<br>Ordens de Produção</a>
+  <a href="{% url 'producao:atualizar-estado' %}" class="action-btn navy">Atualizar Estado<br>da OP</a>
+  <a href="{% url 'producao:pedir-assistencia' %}" class="action-btn orange">Pedir<br>Assistência</a>
+</div>
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Ordens de Compra — PrimeTool{% endblock %}
+{% block page_title %}Inventário{% endblock %}
+{% block content %}
+<div class="pt-card">
+  <div class="pt-card-header" style="display:flex;align-items:center;justify-content:space-between;">
+    <span><i class="bi bi-cart-check me-2"></i>Ordens de Compra</span>
+    <a href="{% url 'armazem:pedido-criar' %}" class="action-btn orange" style="font-size:.82rem;padding:6px 16px;">+ Nova OC</a>
+  </div>
+
+  <!-- Filtro por estado -->
+  <form method="get" style="display:flex;gap:10px;align-items:center;padding:14px 20px;border-bottom:1px solid var(--border,#e8eaf0);flex-wrap:wrap;">
+    <select name="estado" class="pt-input pt-select" style="min-width:220px;" onchange="this.form.submit()">
+      <option value="">Todos os estados</option>
+      {% for val, label in estados %}
+        <option value="{{ val }}" {% if estado_sel == val %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    {% if estado_sel %}
+    <a href="{% url 'armazem:pedidos' %}" class="action-btn" style="background:var(--bg-secondary,#f4f6fb);color:var(--text-main,#555);">Limpar</a>
+    {% endif %}
+  </form>
+
+  <table class="pt-table">
+    <thead>
+      <tr>
+        <th>Referência</th>
+        <th>Fornecedor</th>
+        <th>Data Pedido</th>
+        <th>Entrega Prevista</th>
+        <th>Itens</th>
+        <th>Receção</th>
+        <th>Estado</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in pedidos %}
+      <tr>
+        <td><code style="background:#f0f4ff;padding:2px 8px;border-radius:5px;font-size:.8rem;">{{ p.referencia }}</code></td>
+        <td><strong>{{ p.fornecedor }}</strong></td>
+        <td>{{ p.data_pedido|date:"d/m/Y" }}</td>
+        <td>{{ p.data_entrega_prevista|date:"d/m/Y"|default:"—" }}</td>
+        <td style="text-align:center;">{{ p.total_itens }}</td>
+        <td style="text-align:center;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="flex:1;background:#e8eaf0;border-radius:4px;height:8px;min-width:60px;">
+              <div style="width:{{ p.percentagem_recebida }}%;background:var(--green);border-radius:4px;height:8px;"></div>
+            </div>
+            <span style="font-size:.8rem;color:#666;">{{ p.percentagem_recebida }}%</span>
+          </div>
+        </td>
+        <td>
+          {% if p.estado == 'pendente' %}<span class="badge-s pendente">Pendente</span>
+          {% elif p.estado == 'aprovado' %}<span class="badge-s em_preparacao">Aprovado</span>
+          {% elif p.estado == 'enviado' %}<span class="badge-s em_producao">Enviado</span>
+          {% elif p.estado == 'parcialmente_recebido' %}<span class="badge-s qualidade">Parcialmente Recebido</span>
+          {% elif p.estado == 'recebido' %}<span class="badge-s concluida">Recebido</span>
+          {% elif p.estado == 'cancelado' %}<span class="badge-s cancelada">Cancelado</span>
+          {% endif %}
+        </td>
+        <td><a href="{% url 'armazem:pedido-detalhe' p.pk %}" style="color:var(--blue);font-weight:600;text-decoration:none;">Ver</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="8" style="text-align:center;padding:32px;color:#999;font-style:italic;">Nenhuma ordem de compra encontrada.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

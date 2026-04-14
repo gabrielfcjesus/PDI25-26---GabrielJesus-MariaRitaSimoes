@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% block title %}{{ pedido.referencia }} — PrimeTool{% endblock %}
+{% block page_title %}Inventário{% endblock %}
+
+{% block sub_header %}
+<div class="sub-header">
+  <a href="{% url 'armazem:menu' %}">Armazém</a> ›
+  <a href="{% url 'armazem:pedidos' %}">Ordens de Compra</a> ›
+  <span>{{ pedido.referencia }}</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div style="display:grid;grid-template-columns:300px 1fr;gap:24px;align-items:start;">
+
+  <!-- Painel esquerdo: info + ações -->
+  <div style="display:flex;flex-direction:column;gap:16px;">
+
+    <!-- Info da OC -->
+    <div class="pt-card">
+      <div class="pt-card-header"><span><i class="bi bi-file-earmark-text me-2"></i>{{ pedido.referencia }}</span></div>
+      <div style="padding:18px;display:flex;flex-direction:column;gap:10px;font-size:.9rem;">
+        <div>
+          <div style="color:#888;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;">Fornecedor</div>
+          <div style="font-weight:700;font-size:1rem;">{{ pedido.fornecedor }}</div>
+        </div>
+        <div>
+          <div style="color:#888;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;">Estado</div>
+          <div>
+            {% if pedido.estado == 'pendente' %}<span class="badge-s pendente">Pendente</span>
+            {% elif pedido.estado == 'aprovado' %}<span class="badge-s em_preparacao">Aprovado</span>
+            {% elif pedido.estado == 'enviado' %}<span class="badge-s em_producao">Enviado ao Fornecedor</span>
+            {% elif pedido.estado == 'parcialmente_recebido' %}<span class="badge-s qualidade">Parcialmente Recebido</span>
+            {% elif pedido.estado == 'recebido' %}<span class="badge-s concluida">Recebido</span>
+            {% elif pedido.estado == 'cancelado' %}<span class="badge-s cancelada">Cancelado</span>
+            {% endif %}
+          </div>
+        </div>
+        <div>
+          <div style="color:#888;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;">Data do Pedido</div>
+          <div>{{ pedido.data_pedido|date:"d/m/Y" }}</div>
+        </div>
+        {% if pedido.data_entrega_prevista %}
+        <div>
+          <div style="color:#888;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;">Entrega Prevista</div>
+          <div>{{ pedido.data_entrega_prevista|date:"d/m/Y" }}</div>
+        </div>
+        {% endif %}
+        {% if pedido.data_entrega_real %}
+        <div>
+          <div style="color:#888;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;">Entrega Real</div>
+          <div>{{ pedido.data_entrega_real|date:"d/m/Y" }}</div>
+        </div>
+        {% endif %}
+        {% if pedido.observacoes %}
+        <div>
+          <div style="color:#888;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;">Observações</div>
+          <div>{{ pedido.observacoes }}</div>
+        </div>
+        {% endif %}
+        <div>
+          <div style="color:#888;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;">Criado por</div>
+          <div>{{ pedido.criado_por.get_full_name|default:pedido.criado_por }} · {{ pedido.criado_em|date:"d/m/Y H:i" }}</div>
+        </div>
+        <!-- Barra de progresso de receção -->
+        {% if pedido.estado != 'cancelado' and pedido.estado != 'pendente' %}
+        <div>
+          <div style="color:#888;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Receção</div>
+          <div style="background:#e8eaf0;border-radius:6px;height:10px;">
+            <div style="width:{{ pedido.percentagem_recebida }}%;background:var(--green);border-radius:6px;height:10px;transition:width .3s;"></div>
+          </div>
+          <div style="font-size:.8rem;color:#666;margin-top:4px;">{{ pedido.percentagem_recebida }}% recebido</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Botões de transição de estado -->
+    <div class="pt-card" style="padding:16px;display:flex;flex-direction:column;gap:8px;">
+      {% if pedido.estado == 'pendente' %}
+      <form method="post" action="{% url 'armazem:pedido-acao' pedido.pk %}">
+        {% csrf_token %}<input type="hidden" name="action" value="aprovar">
+        <button type="submit" class="action-btn green" style="width:100%;">Aprovar OC</button>
+      </form>
+      {% endif %}
+
+      {% if pedido.estado == 'aprovado' %}
+      <form method="post" action="{% url 'armazem:pedido-acao' pedido.pk %}">
+        {% csrf_token %}<input type="hidden" name="action" value="enviar">
+        <button type="submit" class="action-btn blue" style="width:100%;">Marcar como Enviado</button>
+      </form>
+      {% endif %}
+
+      {% if pedido.estado not in 'recebido,cancelado' %}
+      <form method="post" action="{% url 'armazem:pedido-acao' pedido.pk %}">
+        {% csrf_token %}<input type="hidden" name="action" value="cancelar">
+        <button type="submit" class="action-btn" style="width:100%;background:#fff0f0;color:#c00;border:1px solid #fcc;"
+                onclick="return confirm('Tem a certeza que quer cancelar esta ordem de compra?')">Cancelar OC</button>
+      </form>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <!-- Painel direito: itens + receção -->
+  <div style="display:flex;flex-direction:column;gap:16px;">
+    <div class="pt-card">
+      <div class="pt-card-header"><span><i class="bi bi-list-check me-2"></i>Materiais Encomendados</span></div>
+
+      {% if pedido.estado in 'enviado,parcialmente_recebido' %}
+      <!-- Form de receção -->
+      <form method="post" action="{% url 'armazem:pedido-acao' pedido.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="receber">
+        <table class="pt-table">
+          <thead><tr>
+            <th>Material</th>
+            <th style="text-align:right;">Encomendado</th>
+            <th style="text-align:right;">Recebido</th>
+            <th style="text-align:right;">Por Receber</th>
+            <th style="text-align:center;">Qty a Receber Agora</th>
+          </tr></thead>
+          <tbody>
+            {% for item in itens %}
+            <tr>
+              <td>
+                <div style="font-weight:600;">{{ item.material.nome }}</div>
+                <div style="font-size:.78rem;color:#888;">{{ item.material.referencia }}</div>
+              </td>
+              <td style="text-align:right;">{{ item.quantidade }} {{ item.material.get_unidade_display }}</td>
+              <td style="text-align:right;">
+                <span style="color:{% if item.qty_recebida >= item.quantidade %}var(--green){% elif item.qty_recebida > 0 %}var(--orange){% else %}#999{% endif %};">
+                  {{ item.qty_recebida }}
+                </span>
+              </td>
+              <td style="text-align:right;">{{ item.por_receber }}</td>
+              <td style="text-align:center;">
+                {% if item.por_receber > 0 %}
+                <input type="number" name="qty_{{ item.pk }}" min="0" step="0.01"
+                       max="{{ item.por_receber }}"
+                       class="pt-input" style="width:90px;padding:4px 8px;text-align:right;"
+                       placeholder="0">
+                {% else %}
+                <span style="color:var(--green);font-size:.85rem;">✓ Completo</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <div style="padding:16px;display:flex;justify-content:flex-end;">
+          <button type="submit" class="action-btn green">Registar Receção</button>
+        </div>
+      </form>
+
+      {% else %}
+      <!-- Tabela simples quando não está em fase de receção -->
+      <table class="pt-table">
+        <thead><tr>
+          <th>Material</th>
+          <th style="text-align:right;">Encomendado</th>
+          <th style="text-align:right;">Recebido</th>
+          <th style="text-align:right;">Por Receber</th>
+          <th>Estado</th>
+        </tr></thead>
+        <tbody>
+          {% for item in itens %}
+          <tr>
+            <td>
+              <div style="font-weight:600;">{{ item.material.nome }}</div>
+              <div style="font-size:.78rem;color:#888;">{{ item.material.referencia }}</div>
+            </td>
+            <td style="text-align:right;">{{ item.quantidade }} {{ item.material.get_unidade_display }}</td>
+            <td style="text-align:right;">{{ item.qty_recebida }}</td>
+            <td style="text-align:right;">{{ item.por_receber }}</td>
+            <td>
+              {% if item.qty_recebida >= item.quantidade %}<span class="badge-s concluida">Recebido</span>
+              {% elif item.qty_recebida > 0 %}<span class="badge-s qualidade">Parcial</span>
+              {% else %}<span class="badge-s pendente">Pendente</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}

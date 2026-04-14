@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Inventário — PrimeTool{% endblock %}
+{% block page_title %}Inventário{% endblock %}
+{% block content %}
+<div class="action-list">
+  <a href="{% url 'armazem:materiais' %}" class="action-btn blue">Consultar Materiais / Stock</a>
+  <a href="{% url 'armazem:pedidos' %}" class="action-btn orange">Ordens de Compra</a>
+</div>
+{% endblock %}

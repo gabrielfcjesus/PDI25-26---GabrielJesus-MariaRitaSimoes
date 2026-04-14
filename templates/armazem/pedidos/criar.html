@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}Nova Ordem de Compra — PrimeTool{% endblock %}
+{% block page_title %}Inventário{% endblock %}
+{% block content %}
+<div style="max-width:820px;">
+  <div class="pt-card">
+    <div class="pt-card-header">
+      <span><i class="bi bi-cart-plus me-2"></i>Nova Ordem de Compra</span>
+    </div>
+    <form method="post" id="form-oc" style="padding:24px;">
+      {% csrf_token %}
+
+      <!-- Fornecedor + datas -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+        <div>
+          <label class="pt-label">Fornecedor *</label>
+          <input type="text" name="fornecedor" class="pt-input" placeholder="Nome do fornecedor" required>
+        </div>
+        <div>
+          <label class="pt-label">Data de Entrega Prevista</label>
+          <input type="date" name="data_entrega_prevista" class="pt-input">
+        </div>
+      </div>
+      <div style="margin-bottom:24px;">
+        <label class="pt-label">Observações</label>
+        <textarea name="observacoes" class="pt-input" rows="2" placeholder="Notas adicionais..."></textarea>
+      </div>
+
+      <!-- Picker de materiais -->
+      <div style="margin-bottom:16px;">
+        <div style="font-weight:600;font-size:.92rem;margin-bottom:10px;color:var(--navy);">Materiais a encomendar</div>
+
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:0;flex:1;min-width:200px;background:#f4f6fb;border:1.5px solid var(--border,#e0e3ee);border-radius:8px;padding:0 12px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#999" viewBox="0 0 16 16" style="flex-shrink:0;">
+              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0 0 1.415-1.415l-3.868-3.833zm-5.242 1.156a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
+            </svg>
+            <input type="text" id="picker-q" placeholder="Pesquisar material..."
+                   style="border:none;background:transparent;padding:9px 10px;font-family:var(--font);font-size:.88rem;outline:none;width:100%;">
+          </div>
+          <select id="picker-cat" class="pt-input pt-select" style="min-width:180px;">
+            <option value="">Todas as categorias</option>
+            {% for c in categorias %}
+              <option value="{{ c.pk }}">{{ c.nome }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Resultados do picker -->
+        <div id="picker-resultados" style="background:#f8f9fd;border:1px solid var(--border,#e0e3ee);border-radius:8px;max-height:200px;overflow-y:auto;display:none;margin-bottom:12px;">
+          <table style="width:100%;font-size:.85rem;border-collapse:collapse;">
+            <thead><tr style="background:#f0f2f8;">
+              <th style="padding:6px 12px;text-align:left;">Ref.</th>
+              <th style="padding:6px 12px;text-align:left;">Material</th>
+              <th style="padding:6px 12px;text-align:left;">Categoria</th>
+              <th style="padding:6px 12px;text-align:right;">Stock</th>
+              <th style="padding:6px 12px;"></th>
+            </tr></thead>
+            <tbody id="picker-tbody"></tbody>
+          </table>
+        </div>
+
+        <!-- Tabela de itens adicionados -->
+        <table class="pt-table" id="tabela-itens">
+          <thead><tr><th>Referência</th><th>Material</th><th>Unidade</th><th>Stock Atual</th><th>Qtd. a Encomendar</th><th></th></tr></thead>
+          <tbody id="itens-tbody">
+            <tr id="sem-itens"><td colspan="6" style="text-align:center;padding:20px;color:#999;font-style:italic;">Adicione materiais usando a pesquisa acima.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:24px;">
+        <a href="{% url 'armazem:pedidos' %}" class="action-btn" style="background:#f4f6fb;color:#555;">Cancelar</a>
+        <button type="submit" class="action-btn orange">Criar Ordem de Compra</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+(function(){
+  const pickerQ   = document.getElementById('picker-q');
+  const pickerCat = document.getElementById('picker-cat');
+  const resultados = document.getElementById('picker-resultados');
+  const tbody      = document.getElementById('picker-tbody');
+  const itensTbody = document.getElementById('itens-tbody');
+  const semItens   = document.getElementById('sem-itens');
+  const itensAdicionados = {}; // id → row data
+
+  let timer = null;
+
+  function pesquisar() {
+    const q   = pickerQ.value.trim();
+    const cat = pickerCat.value;
+    if (!q && !cat) { resultados.style.display = 'none'; return; }
+    fetch(`{% url 'armazem:materiais-pesquisar' %}?q=${encodeURIComponent(q)}&categoria=${encodeURIComponent(cat)}`)
+      .then(r => r.json())
+      .then(data => {
+        tbody.innerHTML = '';
+        if (!data.resultados.length) {
+          tbody.innerHTML = '<tr><td colspan="5" style="padding:12px;text-align:center;color:#999;">Sem resultados.</td></tr>';
+        } else {
+          data.resultados.forEach(m => {
+            const tr = document.createElement('tr');
+            tr.style.cursor = 'pointer';
+            tr.innerHTML = `
+              <td style="padding:6px 12px;"><code style="background:#f0f4ff;padding:1px 6px;border-radius:4px;">${m.referencia}</code></td>
+              <td style="padding:6px 12px;">${m.nome}</td>
+              <td style="padding:6px 12px;">${m.categoria || '—'}</td>
+              <td style="padding:6px 12px;text-align:right;">${m.stock} ${m.unidade}</td>
+              <td style="padding:6px 12px;text-align:center;">
+                ${itensAdicionados[m.id]
+                  ? '<span style="color:var(--green);font-size:.8rem;">✓ Adicionado</span>'
+                  : '<button type="button" class="action-btn orange" style="padding:3px 12px;font-size:.8rem;" onclick="adicionarItem('+m.id+',\''+m.referencia+'\',\''+m.nome.replace(/'/g,"\\'") +'\',\''+m.unidade+'\','+m.stock+')">Adicionar</button>'
+                }
+              </td>`;
+            tbody.appendChild(tr);
+          });
+        }
+        resultados.style.display = 'block';
+      });
+  }
+
+  pickerQ.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(pesquisar, 300); });
+  pickerCat.addEventListener('change', pesquisar);
+
+  window.adicionarItem = function(id, ref, nome, unidade, stock) {
+    if (itensAdicionados[id]) return;
+    itensAdicionados[id] = true;
+    if (semItens) semItens.remove();
+
+    const tr = document.createElement('tr');
+    tr.id = `item-row-${id}`;
+    tr.innerHTML = `
+      <td><code style="background:#f0f4ff;padding:2px 8px;border-radius:5px;font-size:.8rem;">${ref}</code>
+          <input type="hidden" name="material_id" value="${id}"></td>
+      <td>${nome}</td>
+      <td>${unidade}</td>
+      <td>${stock}</td>
+      <td><input type="number" name="quantidade" min="0.01" step="0.01" required
+                 class="pt-input" style="width:100px;padding:4px 8px;" placeholder="0"></td>
+      <td><button type="button" onclick="removerItem(${id})"
+                  style="background:none;border:none;color:#c00;cursor:pointer;font-size:1.1rem;">✕</button></td>`;
+    itensTbody.appendChild(tr);
+    pesquisar(); // atualiza botão para "✓ Adicionado"
+  };
+
+  window.removerItem = function(id) {
+    delete itensAdicionados[id];
+    const row = document.getElementById(`item-row-${id}`);
+    if (row) row.remove();
+    if (!itensTbody.querySelector('tr')) {
+      const tr = document.createElement('tr');
+      tr.id = 'sem-itens';
+      tr.innerHTML = '<td colspan="6" style="text-align:center;padding:20px;color:#999;font-style:italic;">Adicione materiais usando a pesquisa acima.</td>';
+      itensTbody.appendChild(tr);
+    }
+    pesquisar();
+  };
+
+  // Fecha picker ao clicar fora
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#picker-resultados') && e.target !== pickerQ && e.target !== pickerCat) {
+      resultados.style.display = 'none';
+    }
+  });
+})();
+</script>
+{% endblock %}
