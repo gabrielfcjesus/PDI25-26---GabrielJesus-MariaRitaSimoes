@@ -4,7 +4,6 @@
 
 O PrimeTool Production é um sistema de gestão desenvolvido para apoiar o processo produtivo de uma empresa. O objetivo da aplicação é centralizar a informação e facilitar o acompanhamento das várias fases do trabalho, desde o planeamento até à expedição e montagem.
 
----
 
 ## Funcionalidades principais
 
@@ -16,8 +15,6 @@ O PrimeTool Production é um sistema de gestão desenvolvido para apoiar o proce
 - Preparação da expedição
 - Consulta do estado das ordens pela equipa de montagem
 - Gestão de utilizadores e permissões
-
----
 
 ## Tecnologias utilizadas
 
@@ -31,7 +28,6 @@ O PrimeTool Production é um sistema de gestão desenvolvido para apoiar o proce
 
 Numa fase posterior, o sistema poderá ser adaptado para uma base de dados online, como por exemplo o Supabase.
 
----
 
 ## Estrutura do projeto
 
