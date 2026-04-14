@@ -2,6 +2,7 @@
 {% block title %}Montagem — PrimeTool{% endblock %}
 {% block page_title %}Montagem{% endblock %}
 {% block content %}
+<div class="center-layout">
 <div class="action-list">
   <a href="{% url 'montagem:criar' %}" class="action-btn green">
     <i class="bi bi-plus-circle"></i>Nova Tarefa de Montagem
@@ -9,5 +10,6 @@
   <a href="{% url 'montagem:guias' %}" class="action-btn navy">
     <i class="bi bi-truck"></i>Guias de Transporte
   </a>
+</div>
 </div>
 {% endblock %}

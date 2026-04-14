@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+{% block title %}Guia {{ exp.referencia }} — PrimeTool{% endblock %}
+{% block page_title %}Expedição{% endblock %}
+{% block sub_header %}
+<div class="sub-header">
+  <a href="{% url 'expedicao:menu' %}">Expedição</a>
+  <span class="sep">›</span>
+  <a href="{% url 'expedicao:lista' %}">Consultar Expedições</a>
+  <span class="sep">›</span>
+  <span>{{ exp.referencia }}</span>
+</div>
+{% endblock %}
+{% block extra_head %}
+<style>
+@media print {
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .topbar, .sub-header, .no-print { display: none !important; }
+  body { background: #fff !important; font-family: 'Exo 2', sans-serif; }
+  .page-content { padding: 0 !important; }
+  .web-only { display: none !important; }
+  .print-doc { display: block !important; }
+}
+.print-doc { display: none; }
+</style>
+{% endblock %}
+{% block content %}
+
+<!-- DOCUMENTO DE IMPRESSÃO -->
+<div class="print-doc" style="max-width:780px;margin:0 auto;padding:32px;font-family:'Exo 2',sans-serif;color:#1a2340;">
+
+  <!-- Cabeçalho -->
+  <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #0d1b4b;padding-bottom:16px;margin-bottom:20px;">
+    <div>
+      <div style="font-size:1.6rem;font-weight:900;color:#0d1b4b;letter-spacing:1px;">PRIMETOOL</div>
+      <div style="font-size:.7rem;letter-spacing:3px;color:#0094ff;font-weight:700;text-transform:uppercase;">Production</div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-size:.65rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#888;">Guia de Transporte</div>
+      <div style="font-size:1.3rem;font-weight:800;color:#0d1b4b;">{{ exp.referencia }}</div>
+      <div style="font-size:.7rem;color:#888;margin-top:2px;">Emitida em: {% now "d/m/Y" %}</div>
+    </div>
+  </div>
+
+  <!-- Códigos em destaque -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+    <div style="background:#0d1b4b;padding:14px 18px;border-radius:6px;">
+      <div style="font-size:.6rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:4px;">Nº Ordem de Produção</div>
+      <div style="font-size:1.3rem;font-weight:800;color:#fff;letter-spacing:2px;">{{ exp.ordem.referencia }}</div>
+    </div>
+    <div style="background:#0094ff;padding:14px 18px;border-radius:6px;">
+      <div style="font-size:.6rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:4px;">Código AT</div>
+      <div style="font-size:1.3rem;font-weight:800;color:#fff;letter-spacing:3px;">{{ exp.codigo_at }}</div>
+    </div>
+  </div>
+
+  <!-- Produto -->
+  <div style="border:1.5px solid #d0d8e8;border-radius:6px;margin-bottom:14px;overflow:hidden;">
+    <div style="background:#f0f4ff;padding:8px 16px;font-size:.65rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#0d1b4b;border-bottom:1px solid #d0d8e8;">Produto Final</div>
+    <div style="padding:14px 16px;">
+      <div style="font-size:1rem;font-weight:800;color:#0d1b4b;margin-bottom:4px;">{{ exp.ordem.nome }}</div>
+      {% if exp.ordem.descricao %}<div style="font-size:.82rem;color:#555;">{{ exp.ordem.descricao }}</div>{% endif %}
+    </div>
+  </div>
+
+  <!-- Detalhes em 2 colunas -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+
+    <div style="border:1.5px solid #d0d8e8;border-radius:6px;overflow:hidden;">
+      <div style="background:#f0f4ff;padding:8px 16px;font-size:.65rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#0d1b4b;border-bottom:1px solid #d0d8e8;">Expedição</div>
+      <div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+        <div><div style="font-size:.6rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#888;">Cliente</div><div style="font-weight:700;font-size:.9rem;">{{ exp.ordem.cliente }}</div></div>
+        <div><div style="font-size:.6rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#888;">Transportadora / Veículo</div><div style="font-weight:700;font-size:.9rem;">{{ exp.transportadora|default:"—" }}</div></div>
+        <div><div style="font-size:.6rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#888;">Responsável</div><div style="font-weight:700;font-size:.9rem;">{{ exp.responsavel.get_full_name|default:exp.responsavel.username|default:"—" }}</div></div>
+      </div>
+    </div>
+
+    <div style="border:1.5px solid #d0d8e8;border-radius:6px;overflow:hidden;">
+      <div style="background:#f0f4ff;padding:8px 16px;font-size:.65rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#0d1b4b;border-bottom:1px solid #d0d8e8;">Entrega e Montagem</div>
+      <div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+        <div><div style="font-size:.6rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#888;">Morada de Entrega</div><div style="font-weight:700;font-size:.9rem;">{{ exp.morada_entrega|default:"—" }}</div></div>
+        <div><div style="font-size:.6rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#888;">Data Prevista de Envio</div><div style="font-weight:700;font-size:.9rem;">{{ exp.data_prevista_envio|date:"d/m/Y"|default:"—" }}</div></div>
+        <div><div style="font-size:.6rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#888;">Data Prevista de Montagem</div><div style="font-weight:700;font-size:.9rem;">{{ exp.ordem.data_entrega_prevista|date:"d/m/Y"|default:"—" }}</div></div>
+      </div>
+    </div>
+
+  </div>
+
+  {% if exp.observacoes %}
+  <div style="border:1.5px solid #d0d8e8;border-radius:6px;overflow:hidden;margin-bottom:14px;">
+    <div style="background:#f0f4ff;padding:8px 16px;font-size:.65rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#0d1b4b;border-bottom:1px solid #d0d8e8;">Observações</div>
+    <div style="padding:12px 16px;font-size:.85rem;color:#555;">{{ exp.observacoes }}</div>
+  </div>
+  {% endif %}
+
+  <!-- Assinaturas -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:32px;">
+    <div style="border-top:1.5px solid #1a2340;padding-top:8px;text-align:center;">
+      <div style="font-size:.65rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#888;">Assinatura do Responsável</div>
+    </div>
+    <div style="border-top:1.5px solid #1a2340;padding-top:8px;text-align:center;">
+      <div style="font-size:.65rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#888;">Assinatura do Recetor</div>
+    </div>
+  </div>
+
+  <!-- Rodapé -->
+  <div style="margin-top:28px;border-top:1px solid #d0d8e8;padding-top:10px;display:flex;justify-content:space-between;align-items:center;">
+    <div style="font-size:.65rem;color:#aaa;">PrimeTool Production — Documento gerado automaticamente</div>
+    <div style="font-size:.65rem;color:#aaa;">{{ exp.referencia }} | {{ exp.codigo_at }}</div>
+  </div>
+
+</div>
+
+<!-- VISTA WEB -->
+<div class="web-only" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
+
+  <!-- Coluna esquerda -->
+  <div class="pt-card">
+    <div class="pt-card-header">
+      <span><i class="bi bi-truck me-2"></i>Guia de Transporte</span>
+      <span class="badge-s expedicao">{{ exp.get_estado_display }}</span>
+    </div>
+    <div style="padding:24px;display:flex;flex-direction:column;gap:16px;">
+
+      <!-- Nº Guia destaque -->
+      <div style="background:var(--navy);border-radius:10px;padding:14px 20px;">
+        <div style="font-size:.65rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:4px;">Nº Guia de Transporte</div>
+        <div style="font-size:1.4rem;font-weight:800;color:#fff;letter-spacing:2px;">{{ exp.referencia }}</div>
+      </div>
+
+      <!-- Nº OP destaque -->
+      <div style="background:var(--blue);border-radius:10px;padding:14px 20px;">
+        <div style="font-size:.65rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:4px;">Nº Ordem de Produção</div>
+        <div style="font-size:1.4rem;font-weight:800;color:#fff;letter-spacing:2px;">{{ exp.ordem.referencia }}</div>
+      </div>
+
+      <!-- Restantes campos -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div>
+          <div class="pt-label">Código AT</div>
+          <div style="font-weight:700;letter-spacing:1.5px;">{{ exp.codigo_at }}</div>
+        </div>
+        <div>
+          <div class="pt-label">Cliente</div>
+          <div style="font-weight:700;">{{ exp.ordem.cliente }}</div>
+        </div>
+        <div>
+          <div class="pt-label">Transportadora / Veículo</div>
+          <div style="font-weight:700;">{{ exp.transportadora|default:"—" }}</div>
+        </div>
+        <div>
+          <div class="pt-label">Responsável</div>
+          <div style="font-weight:700;">{{ exp.responsavel.get_full_name|default:exp.responsavel.username|default:"—" }}</div>
+        </div>
+      </div>
+
+      <div style="border-top:1.5px solid var(--border);padding-top:14px;display:flex;gap:10px;" class="no-print">
+        <a href="{% url 'expedicao:lista' %}" class="action-btn blue" style="max-width:160px;padding:11px 20px;">
+          <i class="bi bi-arrow-left"></i>Voltar
+        </a>
+        <button onclick="window.print()" class="action-btn" style="max-width:180px;padding:11px 20px;background:var(--navy);">
+          <i class="bi bi-printer"></i>Imprimir / PDF
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Coluna direita -->
+  <div style="display:flex;flex-direction:column;gap:16px;">
+
+    <!-- Produto Final -->
+    <div class="pt-card">
+      <div class="pt-card-header"><i class="bi bi-box-seam me-2"></i>Produto Final</div>
+      <div style="padding:20px;display:flex;flex-direction:column;gap:10px;">
+        <div>
+          <div class="pt-label">Nome</div>
+          <div style="font-weight:800;font-size:1.05rem;color:var(--navy);">{{ exp.ordem.nome }}</div>
+        </div>
+        {% if exp.ordem.descricao %}
+        <div>
+          <div class="pt-label">Descrição</div>
+          <div style="font-size:.9rem;color:#555;line-height:1.5;">{{ exp.ordem.descricao }}</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Entrega -->
+    <div class="pt-card">
+      <div class="pt-card-header"><i class="bi bi-geo-alt me-2"></i>Entrega e Montagem</div>
+      <div style="padding:20px;display:flex;flex-direction:column;gap:12px;">
+        <div>
+          <div class="pt-label">Morada de Entrega</div>
+          <div style="font-weight:700;">{{ exp.morada_entrega|default:"—" }}</div>
+        </div>
+        <div>
+          <div class="pt-label">Data Prevista de Envio</div>
+          <div style="font-weight:700;">{{ exp.data_prevista_envio|date:"d/m/Y"|default:"—" }}</div>
+        </div>
+        <div>
+          <div class="pt-label">Data Prevista de Montagem</div>
+          <div style="font-weight:700;">{{ exp.ordem.data_entrega_prevista|date:"d/m/Y"|default:"—" }}</div>
+        </div>
+        {% if exp.observacoes %}
+        <div>
+          <div class="pt-label">Observações</div>
+          <div style="background:#f8f9fc;border-radius:8px;padding:10px 14px;font-size:.88rem;">{{ exp.observacoes }}</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+{% endblock %}

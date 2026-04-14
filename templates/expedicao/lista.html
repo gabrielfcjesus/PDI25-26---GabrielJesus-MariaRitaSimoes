@@ -5,7 +5,7 @@
 <div class="sub-header">
   <a href="{% url 'expedicao:menu' %}">Expedição</a>
   <span class="sep">›</span>
-  <span>Atualizar Estado</span>
+  <span>Consultar Expedições</span>
 </div>
 {% endblock %}
 {% block content %}
@@ -21,8 +21,8 @@
     </tr></thead>
     <tbody>
       {% for e in expedicoes %}
-      <tr>
-        <td><strong>{{ e.referencia }}</strong></td>
+      <tr style="cursor:pointer;" onclick="window.location='{% url 'expedicao:detalhe' e.pk %}'">
+        <td><strong style="color:var(--blue);">{{ e.referencia }}</strong></td>
         <td>{{ e.ordem }}</td>
         <td>{{ e.transportadora|default:"—" }}</td>
         <td><span class="badge-s expedicao">{{ e.get_estado_display }}</span></td>

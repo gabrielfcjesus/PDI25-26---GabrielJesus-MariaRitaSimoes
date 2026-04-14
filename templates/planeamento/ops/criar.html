@@ -8,7 +8,7 @@
 </div>
 {% endblock %}
 {% block content %}
-<form method="post" id="form-op">
+<form method="post" id="form-op" enctype="multipart/form-data">
   {% csrf_token %}
   <div class="form-panel">
 
@@ -65,7 +65,7 @@
       </div>
     </div>
 
-    <!-- Coluna direita: materiais -->
+    <!-- Coluna direita: materiais + técnico -->
     <div style="display:flex;flex-direction:column;gap:12px;">
       <button type="button" class="field-btn" onclick="adicionarItem()" style="background:#fff;color:var(--navy);border:2px solid var(--navy);">
         Inserir Material +
@@ -73,6 +73,24 @@
       <div class="list-panel" id="lista-material">
         <span class="list-panel-title" id="lista-vazia">Lista Material</span>
         <div id="itens-container" style="width:100%;display:flex;flex-direction:column;gap:10px;"></div>
+      </div>
+
+      <div class="pt-field" style="margin:0;">
+        <label class="pt-label">Descrição Técnica <span style="color:#aaa;font-weight:400;font-size:.7rem;">(especificações do produto)</span></label>
+        <textarea name="descricao" class="pt-input" rows="3" placeholder="Ex: Placar luminoso 1500x700 com LEDs, lona impressa, estrutura em alumínio..."></textarea>
+      </div>
+
+      <div class="pt-field" style="margin:0;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <label class="pt-label" style="margin:0;">Ficheiros Técnicos <span style="color:#aaa;font-weight:400;font-size:.7rem;">(PDF, imagem, DWG)</span></label>
+          <button type="button" onclick="adicionarFicheiro()" style="background:var(--navy);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:.8rem;font-weight:700;cursor:pointer;">+ Adicionar</button>
+        </div>
+        <div id="ficheiros-container" style="display:flex;flex-direction:column;gap:8px;">
+          <div class="ficheiro-row" style="display:flex;align-items:center;gap:8px;">
+            <input type="file" name="ficheiros_tecnicos" class="pt-input" accept=".pdf,.png,.jpg,.jpeg,.dwg,.dxf" style="padding:8px 14px;cursor:pointer;flex:1;">
+            <button type="button" onclick="removerFicheiro(this)" style="background:#f8d7da;color:#58151c;border:none;border-radius:6px;padding:8px 10px;cursor:pointer;font-weight:700;">✕</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -113,6 +131,23 @@
 
 <script>
 const PESQUISAR_URL = '{% url "armazem:materiais-pesquisar" %}';
+
+function adicionarFicheiro() {
+  const container = document.getElementById('ficheiros-container');
+  const row = document.createElement('div');
+  row.className = 'ficheiro-row';
+  row.style.cssText = 'display:flex;align-items:center;gap:8px;';
+  row.innerHTML = `
+    <input type="file" name="ficheiros_tecnicos" class="pt-input" accept=".pdf,.png,.jpg,.jpeg,.dwg,.dxf" style="padding:8px 14px;cursor:pointer;flex:1;">
+    <button type="button" onclick="removerFicheiro(this)" style="background:#f8d7da;color:#58151c;border:none;border-radius:6px;padding:8px 10px;cursor:pointer;font-weight:700;">✕</button>
+  `;
+  container.appendChild(row);
+}
+
+function removerFicheiro(btn) {
+  const rows = document.querySelectorAll('.ficheiro-row');
+  if (rows.length > 1) btn.closest('.ficheiro-row').remove();
+}
 // Pré-preencher data/hora de planeamento com hora atual
 (function() {
   const el = document.getElementById('data_planeamento');

@@ -1,9 +1,18 @@
 """
 apps/expedicao/models.py
 """
+import random
 from django.db import models
 from apps.core.models import User
 from apps.producao.models import OrdemProducao
+
+
+def gerar_codigo_at():
+    """Gera um código AT único de 12 dígitos."""
+    while True:
+        codigo = str(random.randint(100000000000, 999999999999))
+        if not Expedicao.objects.filter(codigo_at=codigo).exists():
+            return codigo
 
 
 class Veiculo(models.Model):
@@ -30,6 +39,7 @@ class Expedicao(models.Model):
     ]
 
     referencia = models.CharField(max_length=30, unique=True)
+    codigo_at = models.CharField(max_length=12, unique=True, blank=True)
     ordem = models.ForeignKey(
         OrdemProducao, on_delete=models.PROTECT, related_name='expedicoes'
     )

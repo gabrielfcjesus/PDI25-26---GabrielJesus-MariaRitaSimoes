@@ -2,6 +2,7 @@
 {% block title %}Inventário — PrimeTool{% endblock %}
 {% block page_title %}Inventário{% endblock %}
 {% block content %}
+<div class="center-layout">
 <div class="action-list">
   <a href="{% url 'armazem:materiais' %}" class="action-btn blue">
     <i class="bi bi-boxes"></i>Consultar Materiais / Stock
@@ -9,5 +10,6 @@
   <a href="{% url 'armazem:pedidos' %}" class="action-btn orange">
     <i class="bi bi-cart-plus"></i>Ordens de Compra
   </a>
+</div>
 </div>
 {% endblock %}

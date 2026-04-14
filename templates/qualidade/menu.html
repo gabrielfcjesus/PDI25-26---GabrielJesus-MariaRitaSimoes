@@ -2,6 +2,7 @@
 {% block title %}Qualidade — PrimeTool{% endblock %}
 {% block page_title %}Qualidade{% endblock %}
 {% block content %}
+<div class="center-layout">
 <div class="action-list">
   <a href="{% url 'qualidade:verificar' %}" class="action-btn green">
     <i class="bi bi-clipboard2-check"></i>Verificar Ordens de Produção
@@ -9,5 +10,6 @@
   <a href="{% url 'qualidade:inspecoes' %}" class="action-btn blue">
     <i class="bi bi-search"></i>Consultar Verificações
   </a>
+</div>
 </div>
 {% endblock %}

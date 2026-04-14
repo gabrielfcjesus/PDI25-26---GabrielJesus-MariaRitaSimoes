@@ -70,6 +70,19 @@ class OrdemProducao(models.Model):
         return f'{self.referencia} - {self.nome}'
 
 
+class FicheiroTecnico(models.Model):
+    ordem = models.ForeignKey(OrdemProducao, on_delete=models.CASCADE, related_name='ficheiros')
+    ficheiro = models.FileField(upload_to='tecnicos/')
+    nome = models.CharField(max_length=200, blank=True)
+    carregado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['carregado_em']
+
+    def __str__(self):
+        return self.nome or self.ficheiro.name
+
+
 class ItemProducao(models.Model):
     """Item/componente dentro de uma OP"""
     ordem = models.ForeignKey(

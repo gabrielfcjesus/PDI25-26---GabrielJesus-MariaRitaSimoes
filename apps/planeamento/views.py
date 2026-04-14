@@ -75,12 +75,16 @@ def op_criar(request):
                 referencia=referencia,
                 nome=nome,
                 cliente_id=cliente_id,
+                descricao=request.POST.get('descricao', '').strip(),
                 data_entrega_prevista=data_entrega,
                 prioridade=request.POST.get('prioridade', 'normal'),
                 responsavel=request.user,
                 criado_por=request.user,
                 data_planeamento=data_plan,
             )
+            from apps.producao.models import FicheiroTecnico
+            for f in request.FILES.getlist('ficheiros_tecnicos'):
+                FicheiroTecnico.objects.create(ordem=op, ficheiro=f, nome=f.name)
             # Processar itens de material submetidos no formulário
             i = 1
             while True:
@@ -133,9 +137,17 @@ def op_editar(request, pk):
         else:
             ordem.nome = nome
             ordem.cliente_id = cliente_id
+            ordem.descricao = request.POST.get('descricao', '').strip()
             ordem.data_entrega_prevista = request.POST.get('data_entrega_prevista') or None
             ordem.prioridade = request.POST.get('prioridade', 'normal')
             ordem.save()
+            # Remover ficheiros marcados
+            from apps.producao.models import FicheiroTecnico
+            for fid in request.POST.getlist('remover_ficheiro'):
+                FicheiroTecnico.objects.filter(pk=fid, ordem=ordem).delete()
+            # Adicionar novos ficheiros
+            for f in request.FILES.getlist('ficheiros_tecnicos'):
+                FicheiroTecnico.objects.create(ordem=ordem, ficheiro=f, nome=f.name)
 
             # Substituir todos os itens pelos submetidos no formulário
             ordem.itens.all().delete()
@@ -172,11 +184,14 @@ def op_editar(request, pk):
         )
     )
     categorias = list(Categoria.objects.order_by('nome').values('id', 'nome'))
+    from apps.producao.models import FicheiroTecnico
+    ficheiros = FicheiroTecnico.objects.filter(ordem=ordem)
     return render(request, 'planeamento/ops/editar.html', {
         'ordem': ordem,
         'clientes': clientes,
         'itens_json': json.dumps(itens_existentes, default=str),
         'categorias_json': json.dumps(categorias, default=str),
+        'ficheiros': ficheiros,
     })
 
 

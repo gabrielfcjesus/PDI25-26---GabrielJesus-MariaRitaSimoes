@@ -2,12 +2,14 @@
 {% block title %}Expedição — PrimeTool{% endblock %}
 {% block page_title %}Expedição{% endblock %}
 {% block content %}
+<div class="center-layout">
 <div class="action-list">
   <a href="{% url 'expedicao:criar' %}" class="action-btn green">
     <i class="bi bi-file-earmark-plus"></i>Criar Guias de Transporte
   </a>
   <a href="{% url 'expedicao:lista' %}" class="action-btn blue">
-    <i class="bi bi-arrow-repeat"></i>Atualizar Estado
+    <i class="bi bi-list-ul"></i>Consultar Expedições
   </a>
+</div>
 </div>
 {% endblock %}

@@ -8,22 +8,180 @@
 </div>
 {% endblock %}
 {% block content %}
-<div style="max-width:660px;">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
+
+  <!-- Coluna esquerda -->
+  <div style="display:flex;flex-direction:column;gap:16px;">
+
+    <!-- Cabeçalho OP -->
+    <div class="pt-card">
+      <div class="pt-card-header">
+        <span><i class="bi bi-calendar2-check me-2"></i>{{ ordem.referencia }} — {{ ordem.nome }}</span>
+        <span class="badge-s {{ ordem.estado }}">{{ ordem.get_estado_display }}</span>
+      </div>
+      <div style="padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div>
+          <div class="pt-label">Cliente</div>
+          <div style="font-weight:700;">{{ ordem.cliente }}</div>
+        </div>
+        <div>
+          <div class="pt-label">Prioridade</div>
+          <div style="font-weight:700;">{{ ordem.get_prioridade_display }}</div>
+        </div>
+        <div>
+          <div class="pt-label">Entrega Prevista</div>
+          <div style="font-weight:700;">{{ ordem.data_entrega_prevista|date:"d/m/Y"|default:"—" }}</div>
+        </div>
+        <div>
+          <div class="pt-label">Responsável</div>
+          <div style="font-weight:700;">{{ ordem.responsavel|default:"—" }}</div>
+        </div>
+        <div>
+          <div class="pt-label">Data de Planeamento</div>
+          <div style="font-weight:700;">{{ ordem.data_planeamento|date:"d/m/Y H:i"|default:"—" }}</div>
+        </div>
+        <div>
+          <div class="pt-label">Criado por</div>
+          <div style="font-weight:700;">{{ ordem.criado_por|default:"—" }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Descrição técnica -->
+    {% if ordem.descricao %}
+    <div class="pt-card">
+      <div class="pt-card-header"><i class="bi bi-file-text me-2"></i>Descrição Técnica</div>
+      <div style="padding:18px 20px;font-size:.92rem;line-height:1.6;color:#333;white-space:pre-line;">{{ ordem.descricao }}</div>
+    </div>
+    {% endif %}
+
+    <!-- Lista de materiais -->
+    {% if ordem.itens.all %}
+    <div class="pt-card">
+      <div class="pt-card-header"><i class="bi bi-boxes me-2"></i>Materiais</div>
+      <table class="pt-table">
+        <thead>
+          <tr><th>Material</th><th>Qtd</th></tr>
+        </thead>
+        <tbody>
+          {% for item in ordem.itens.all %}
+          <tr>
+            <td>{{ item.descricao }}</td>
+            <td>{{ item.quantidade }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+    <!-- Botões -->
+    <div style="display:flex;gap:10px;">
+      <a href="{% url 'planeamento:ops' %}" class="action-btn blue" style="flex:1;padding:12px;">
+        <i class="bi bi-arrow-left"></i>Voltar
+      </a>
+      {% if request.user.is_direcao %}
+      <a href="{% url 'planeamento:op-editar' ordem.pk %}" class="action-btn" style="flex:1;padding:12px;background:var(--orange);">
+        <i class="bi bi-pencil"></i>Editar
+      </a>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <!-- Coluna direita: ficheiros técnicos -->
   <div class="pt-card">
     <div class="pt-card-header">
-      <span><i class="bi bi-building me-2"></i>{{ ordem.referencia }} — {{ ordem.nome }}</span>
-      <span class="badge-s {{ ordem.estado }}" style="font-size:.7rem;">{{ ordem.get_estado_display }}</span>
+      <span><i class="bi bi-paperclip me-2"></i>Ficheiros Técnicos</span>
+      {% if ordem.ficheiros.all %}
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span id="ficheiro-contador" style="font-size:.8rem;opacity:.7;"></span>
+        <button onclick="prevFicheiro()" style="background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;"><i class="bi bi-chevron-left"></i></button>
+        <button onclick="nextFicheiro()" style="background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;"><i class="bi bi-chevron-right"></i></button>
+        <button onclick="fullscreenFicheiro()" style="background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;"><i class="bi bi-fullscreen"></i></button>
+      </div>
+      {% endif %}
     </div>
-    <div style="padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-      <div><div class="pt-label">Cliente</div><div style="font-weight:600;">{{ ordem.cliente }}</div></div>
-      <div><div class="pt-label">Prioridade</div><div style="font-weight:600;">{{ ordem.get_prioridade_display }}</div></div>
-      <div><div class="pt-label">Entrega Prevista</div><div style="font-weight:600;">{{ ordem.data_entrega_prevista|date:"d/m/Y"|default:"—" }}</div></div>
-      <div><div class="pt-label">Responsavel</div><div style="font-weight:600;">{{ ordem.responsavel|default:"—" }}</div></div>
-      {% if ordem.descricao %}<div style="grid-column:span 2;"><div class="pt-label">Descricao</div><div>{{ ordem.descricao }}</div></div>{% endif %}
-    </div>
-    <div style="padding:0 24px 24px;">
-      <a href="{% url 'planeamento:ops' %}" class="action-btn blue" style="display:inline-flex;padding:10px 24px;width:auto;">← Voltar</a>
+    <div style="padding:16px;">
+      {% if ordem.ficheiros.all %}
+        <!-- Dados dos ficheiros para o JS -->
+        <script>
+        const ficheiros = [
+          {% for f in ordem.ficheiros.all %}
+          { url: "{{ f.ficheiro.url }}", nome: "{{ f.nome|default:f.ficheiro.name }}", ext: "{{ f.ficheiro.name|lower|slice:'-4:' }}" },
+          {% endfor %}
+        ];
+        </script>
+        <div id="viewer-container" style="position:relative;">
+          <div id="viewer-conteudo" style="width:100%;"></div>
+        </div>
+      {% else %}
+      <div style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:60px 20px;background:#f4f6fb;border-radius:8px;text-align:center;color:#aaa;">
+        <i class="bi bi-file-earmark-x" style="font-size:3rem;"></i>
+        <div style="font-size:.88rem;">Nenhum ficheiro técnico anexado</div>
+      </div>
+      {% endif %}
     </div>
   </div>
+
+  <!-- Modal fullscreen -->
+  <div id="modal-fs" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:2000;flex-direction:column;">
+    <div style="display:flex;justify-content:flex-end;padding:12px 16px;">
+      <button onclick="fecharFullscreen()" style="background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:8px;padding:8px 16px;cursor:pointer;font-size:.9rem;font-weight:700;">
+        <i class="bi bi-x-lg"></i> Fechar
+      </button>
+    </div>
+    <div id="modal-fs-conteudo" style="flex:1;padding:0 16px 16px;overflow:auto;"></div>
+  </div>
+
+{% if ordem.ficheiros.all %}
+<script>
+let idx = 0;
+
+function renderFicheiro(i) {
+  const f = ficheiros[i];
+  const ext = f.url.split('.').pop().toLowerCase();
+  const container = document.getElementById('viewer-conteudo');
+  document.getElementById('ficheiro-contador').textContent = (i + 1) + ' / ' + ficheiros.length;
+
+  if (ext === 'pdf') {
+    container.innerHTML = `<iframe src="${f.url}" style="width:100%;height:580px;border:none;border-radius:6px;" title="${f.nome}"></iframe>`;
+  } else if (['png','jpg','jpeg','gif','webp'].includes(ext)) {
+    container.innerHTML = `<img src="${f.url}" style="width:100%;border-radius:6px;border:1px solid #e0e3ee;display:block;" alt="${f.nome}">`;
+  } else {
+    container.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;gap:14px;padding:60px 20px;background:#f4f6fb;border-radius:8px;text-align:center;">
+        <i class="bi bi-file-earmark-arrow-down" style="font-size:3rem;color:#0d1b4b;"></i>
+        <div style="font-weight:700;color:#0d1b4b;">${f.nome}</div>
+        <a href="${f.url}" download style="background:#0094ff;color:#fff;border-radius:8px;padding:10px 20px;text-decoration:none;font-weight:700;font-size:.85rem;">
+          <i class="bi bi-download"></i> Descarregar
+        </a>
+      </div>`;
+  }
+}
+
+function prevFicheiro() { idx = (idx - 1 + ficheiros.length) % ficheiros.length; renderFicheiro(idx); }
+function nextFicheiro() { idx = (idx + 1) % ficheiros.length; renderFicheiro(idx); }
+
+function fullscreenFicheiro() {
+  const f = ficheiros[idx];
+  const ext = f.url.split('.').pop().toLowerCase();
+  const modal = document.getElementById('modal-fs');
+  const conteudo = document.getElementById('modal-fs-conteudo');
+  if (ext === 'pdf') {
+    conteudo.innerHTML = `<iframe src="${f.url}" style="width:100%;height:100%;min-height:80vh;border:none;" title="${f.nome}"></iframe>`;
+  } else if (['png','jpg','jpeg','gif','webp'].includes(ext)) {
+    conteudo.innerHTML = `<img src="${f.url}" style="max-width:100%;max-height:85vh;display:block;margin:auto;border-radius:8px;" alt="${f.nome}">`;
+  }
+  modal.style.display = 'flex';
+}
+
+function fecharFullscreen() { document.getElementById('modal-fs').style.display = 'none'; }
+document.getElementById('modal-fs').addEventListener('click', function(e) { if (e.target === this) fecharFullscreen(); });
+
+renderFicheiro(0);
+</script>
+{% endif %}
+
 </div>
 {% endblock %}
