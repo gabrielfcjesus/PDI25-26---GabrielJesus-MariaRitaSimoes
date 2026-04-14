@@ -3,8 +3,14 @@
 {% block page_title %}Produção{% endblock %}
 {% block content %}
 <div class="action-list">
-  <a href="{% url 'producao:ordens' %}" class="action-btn blue">Consultar<br>Ordens de Produção</a>
-  <a href="{% url 'producao:atualizar-estado' %}" class="action-btn navy">Atualizar Estado<br>da OP</a>
-  <a href="{% url 'producao:pedir-assistencia' %}" class="action-btn orange">Pedir<br>Assistência</a>
+  <a href="{% url 'producao:ordens' %}" class="action-btn blue">
+    <i class="bi bi-list-check"></i>Consultar Ordens de Produção
+  </a>
+  <a href="{% url 'producao:atualizar-estado' %}" class="action-btn navy">
+    <i class="bi bi-arrow-repeat"></i>Atualizar Estado da OP
+  </a>
+  <a href="{% url 'producao:pedir-assistencia' %}" class="action-btn orange">
+    <i class="bi bi-headset"></i>Pedir Assistência
+  </a>
 </div>
 {% endblock %}

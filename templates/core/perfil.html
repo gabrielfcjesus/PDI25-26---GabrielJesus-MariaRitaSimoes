@@ -2,30 +2,67 @@
 {% block title %}Perfil — PrimeTool{% endblock %}
 {% block page_title %}O Meu Perfil{% endblock %}
 {% block content %}
-<div style="max-width:480px;">
-  <div class="pt-card">
-    <div class="pt-card-header"><i class="bi bi-person-circle me-2"></i>Informação Pessoal</div>
-    <div style="padding:24px;display:flex;flex-direction:column;gap:12px;">
-      <div style="display:flex;align-items:center;gap:16px;margin-bottom:8px;">
-        <div style="width:64px;height:64px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.6rem;">
-          <i class="bi bi-person-fill"></i>
-        </div>
-        <div>
-          <div style="font-weight:800;font-size:1.1rem;">{{ request.user.get_full_name|default:request.user.username }}</div>
-          <div style="color:#888;font-size:.85rem;">{{ request.user.email|default:"—" }}</div>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        <div><div class="pt-label">Utilizador</div><div style="font-weight:600;">{{ request.user.username }}</div></div>
-        <div><div class="pt-label">Departamento</div><div style="font-weight:600;">{{ request.user.departamento|default:"—" }}</div></div>
-        <div><div class="pt-label">Cargo</div><div style="font-weight:600;">{{ request.user.cargo|default:"—" }}</div></div>
-        <div><div class="pt-label">Telefone</div><div style="font-weight:600;">{{ request.user.telefone|default:"—" }}</div></div>
-      </div>
-      <div style="margin-top:12px;display:flex;gap:10px;">
-        <a href="{% url 'core:home' %}" class="action-btn blue" style="flex:1;padding:12px;">Voltar</a>
-        <a href="{% url 'core:logout' %}" class="action-btn orange" style="flex:1;padding:12px;">Sair</a>
+<div style="max-width:680px;margin:0 auto;">
+
+  <!-- Avatar + nome -->
+  <div style="background:var(--navy);border-radius:18px 18px 0 0;padding:36px 32px;display:flex;align-items:center;gap:24px;">
+    <div style="width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.12);border:3px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;color:#fff;font-size:2.6rem;flex-shrink:0;">
+      {% if request.user.foto %}
+        <img src="{{ request.user.foto.url }}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+      {% else %}
+        <i class="bi bi-person-fill"></i>
+      {% endif %}
+    </div>
+    <div>
+      <div style="color:#fff;font-weight:800;font-size:1.5rem;line-height:1.2;">{{ request.user.get_full_name|default:request.user.username }}</div>
+      <div style="color:rgba(255,255,255,.6);font-size:.88rem;margin-top:4px;">{{ request.user.email|default:"—" }}</div>
+      <div style="margin-top:10px;">
+        <span style="background:var(--orange);color:#fff;border-radius:20px;padding:4px 14px;font-size:.72rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;">
+          {{ request.user.departamento|default:"Sistema" }}
+        </span>
       </div>
     </div>
   </div>
+
+  <!-- Detalhes -->
+  <div style="background:#fff;border-radius:0 0 18px 18px;padding:32px;border:2px solid var(--border);border-top:none;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px;">
+
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <span style="font-size:.7rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#888;">Utilizador</span>
+        <span style="font-weight:700;font-size:1rem;color:var(--text);">{{ request.user.username }}</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <span style="font-size:.7rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#888;">Departamento</span>
+        <span style="font-weight:700;font-size:1rem;color:var(--text);">{{ request.user.departamento|default:"—" }}</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <span style="font-size:.7rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#888;">Cargo</span>
+        <span style="font-weight:700;font-size:1rem;color:var(--text);">{{ request.user.cargo|default:"—" }}</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <span style="font-size:.7rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#888;">Telefone</span>
+        <span style="font-weight:700;font-size:1rem;color:var(--text);">{{ request.user.telefone|default:"—" }}</span>
+      </div>
+
+    </div>
+
+    <!-- Divider -->
+    <div style="border-top:1.5px solid var(--border);margin-bottom:24px;"></div>
+
+    <!-- Botões -->
+    <div style="display:flex;gap:12px;">
+      <a href="{% url 'core:home' %}" class="action-btn blue" style="flex:1;padding:14px;">
+        <i class="bi bi-arrow-left me-2"></i>Voltar
+      </a>
+      <a href="{% url 'core:logout' %}" class="action-btn orange" style="flex:1;padding:14px;">
+        <i class="bi bi-box-arrow-right me-2"></i>Sair
+      </a>
+    </div>
+  </div>
+
 </div>
 {% endblock %}

@@ -3,7 +3,11 @@
 {% block page_title %}Inventário{% endblock %}
 {% block content %}
 <div class="action-list">
-  <a href="{% url 'armazem:materiais' %}" class="action-btn blue">Consultar Materiais / Stock</a>
-  <a href="{% url 'armazem:pedidos' %}" class="action-btn orange">Ordens de Compra</a>
+  <a href="{% url 'armazem:materiais' %}" class="action-btn blue">
+    <i class="bi bi-boxes"></i>Consultar Materiais / Stock
+  </a>
+  <a href="{% url 'armazem:pedidos' %}" class="action-btn orange">
+    <i class="bi bi-cart-plus"></i>Ordens de Compra
+  </a>
 </div>
 {% endblock %}

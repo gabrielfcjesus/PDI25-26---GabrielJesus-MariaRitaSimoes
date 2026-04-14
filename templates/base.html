@@ -39,19 +39,21 @@
     .sub-header a,.sub-header span{color:#fff;font-weight:700;font-size:.82rem;text-decoration:none;text-transform:uppercase;letter-spacing:.5px;}
 
     /* PAGE */
-    .page-content{padding:36px 32px;min-height:calc(100vh - 64px);}
+    .page-content{padding:36px 32px;min-height:calc(100vh - 64px);display:flex;flex-direction:column;justify-content:center;}
 
     /* MODULE GRID */
-    .module-box{border:2.5px solid var(--orange);border-radius:18px;padding:28px 22px;background:#fff;max-width:700px;margin:0 auto;}
-    .module-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
-    .module-btn{background:var(--blue);color:#fff;border:none;border-radius:10px;padding:17px 10px;font-family:var(--font);font-weight:800;font-size:.78rem;letter-spacing:.8px;text-transform:uppercase;cursor:pointer;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center;transition:filter .15s,transform .1s;line-height:1.25;}
-    .module-btn:hover{filter:brightness(1.1);transform:translateY(-1px);color:#fff;}
+    .module-box{border:2.5px solid var(--orange);border-radius:18px;padding:20px 24px;background:#fff;max-width:860px;margin:0 auto;}
+    .module-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+    .module-btn{background:var(--blue);color:#fff;border:none;border-radius:12px;padding:16px 12px;font-family:var(--font);font-weight:800;font-size:.82rem;letter-spacing:.8px;text-transform:uppercase;cursor:pointer;text-align:center;text-decoration:none;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:filter .15s,transform .1s;line-height:1.3;}
+    .module-btn i{font-size:1.3rem;margin-bottom:6px;}
+    .module-btn:hover{filter:brightness(1.1);transform:translateY(-2px);color:#fff;}
     .module-btn.orange{background:var(--orange);}
     .module-btn.green{background:var(--green);}
 
     /* ACTION BUTTONS */
-    .action-list{display:flex;flex-direction:column;gap:14px;max-width:500px;margin:60px auto 0;}
-    .action-btn{display:flex;align-items:center;justify-content:center;text-align:center;padding:20px 24px;border-radius:12px;border:none;font-family:var(--font);font-weight:800;font-size:.9rem;letter-spacing:1px;text-transform:uppercase;cursor:pointer;text-decoration:none;color:#fff;transition:filter .15s,transform .1s;line-height:1.3;}
+    .action-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;max-width:860px;margin:0 auto;border:2.5px solid var(--orange);border-radius:18px;padding:24px;background:#fff;}
+    .action-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px 16px;border-radius:12px;border:none;font-family:var(--font);font-weight:800;font-size:.88rem;letter-spacing:.8px;text-transform:uppercase;cursor:pointer;text-decoration:none;color:#fff;transition:filter .15s,transform .1s;line-height:1.3;}
+    .action-btn i{font-size:1.6rem;margin-bottom:10px;}
     .action-btn:hover{filter:brightness(1.08);transform:translateY(-2px);color:#fff;}
     .action-btn.green{background:var(--green);}
     .action-btn.blue{background:var(--blue);}
@@ -164,5 +166,34 @@
 {% endif %}
 
 {% block extra_scripts %}{% endblock %}
+<script>
+  const iconMap = {
+    'planeamento':           'bi-calendar2-check',
+    'produção':              'bi-gear-wide-connected',
+    'qualidade':             'bi-patch-check',
+    'expedição':             'bi-box-seam',
+    'montagem':              'bi-tools',
+    'inventário':            'bi-archive',
+    'relatórios':            'bi-bar-chart-line',
+    'clientes':              'bi-building',
+    'fornecedores':          'bi-building',
+    'recursos humanos':      'bi-people',
+    'o meu perfil':          'bi-person-circle',
+    'página inicial':        'bi-house',
+    'novo material':         'bi-archive',
+    'utilizadores':          'bi-people',
+  };
+  const titleEl = document.querySelector('.topbar-title');
+  if (titleEl) {
+    const text = titleEl.textContent.trim().toLowerCase();
+    const match = Object.keys(iconMap).find(k => text.includes(k));
+    if (match) {
+      const icon = document.createElement('i');
+      icon.className = 'bi ' + iconMap[match];
+      icon.style.marginRight = '8px';
+      titleEl.prepend(icon);
+    }
+  }
+</script>
 </body>
 </html>

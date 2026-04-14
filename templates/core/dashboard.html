@@ -7,40 +7,60 @@
   <div class="module-grid">
 
     {% if request.user.is_direcao or request.user.codigo_departamento == 'planeamento' %}
-    <a href="{% url 'planeamento:ops' %}" class="module-btn">Planeamento</a>
+    <a href="{% url 'planeamento:ops' %}" class="module-btn">
+      <i class="bi bi-calendar2-check" ></i>Planeamento
+    </a>
     {% endif %}
 
     {% if request.user.is_direcao or request.user.codigo_departamento == 'producao' %}
-    <a href="{% url 'producao:menu' %}" class="module-btn">Produção</a>
+    <a href="{% url 'producao:menu' %}" class="module-btn">
+      <i class="bi bi-gear-wide-connected" ></i>Produção
+    </a>
     {% endif %}
 
     {% if request.user.is_direcao or request.user.codigo_departamento == 'qualidade' %}
-    <a href="{% url 'qualidade:menu' %}" class="module-btn">Qualidade</a>
+    <a href="{% url 'qualidade:menu' %}" class="module-btn">
+      <i class="bi bi-patch-check" ></i>Qualidade
+    </a>
     {% endif %}
 
     {% if request.user.is_direcao or request.user.codigo_departamento == 'expedicao' %}
-    <a href="{% url 'expedicao:menu' %}" class="module-btn">Expedição</a>
+    <a href="{% url 'expedicao:menu' %}" class="module-btn">
+      <i class="bi bi-box-seam" ></i>Expedição
+    </a>
     {% endif %}
 
     {% if request.user.is_direcao or request.user.codigo_departamento == 'montagem' %}
-    <a href="{% url 'montagem:menu' %}" class="module-btn">Montagem</a>
+    <a href="{% url 'montagem:menu' %}" class="module-btn">
+      <i class="bi bi-tools" ></i>Montagem
+    </a>
     {% endif %}
 
     {% if request.user.is_direcao or request.user.codigo_departamento == 'armazem' %}
-    <a href="{% url 'armazem:materiais' %}" class="module-btn">Inventário</a>
+    <a href="{% url 'armazem:materiais' %}" class="module-btn">
+      <i class="bi bi-archive" ></i>Inventário
+    </a>
     {% endif %}
 
     {% if request.user.is_direcao %}
-    <a href="{% url 'core:relatorios' %}" class="module-btn">Relatórios</a>
+    <a href="{% url 'core:relatorios' %}" class="module-btn">
+      <i class="bi bi-bar-chart-line" ></i>Relatórios
+    </a>
     {% endif %}
 
     {% if request.user.is_direcao or request.user.codigo_departamento == 'planeamento' %}
-    <a href="{% url 'planeamento:clientes' %}" class="module-btn">Clientes/Fornecedores</a>
+    <a href="{% url 'planeamento:clientes' %}" class="module-btn">
+      <i class="bi bi-building" ></i>Clientes/Fornecedores
+    </a>
     {% endif %}
 
     {% if request.user.is_direcao %}
-    <a href="{% url 'core:utilizadores' %}" class="module-btn">Recursos Humanos</a>
-    <a href="/admin/" class="module-btn orange">Admin</a>
+    <a href="{% url 'core:utilizadores' %}" class="module-btn">
+      <i class="bi bi-people" ></i>Recursos Humanos
+    </a>
+    <a href="/admin/" class="module-btn orange">
+      <i class="bi bi-shield-lock" ></i>Admin
+    </a>
     {% endif %}
 
   </div>
