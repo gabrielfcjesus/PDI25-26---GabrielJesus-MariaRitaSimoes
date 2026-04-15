@@ -75,15 +75,16 @@ def criar(request):
             )
             messages.success(request, f'Expedição {ref} criada. OP avançou para Expedição.')
             return redirect('expedicao:detalhe', pk=exp.pk)
-@login_required
-@departamento_required(['expedicao', 'direcao'])
-def detalhe(request, pk):
-    exp = get_object_or_404(Expedicao, pk=pk)
-    return render(request, 'expedicao/detalhe.html', {'exp': exp})
-
 
     return render(request, 'expedicao/criar.html', {
         'ordens': ordens,
         'ordens_intermedia_ids': [op.pk for op in ordens_intermedia],
         'veiculos': veiculos,
     })
+
+
+@login_required
+@departamento_required(['expedicao', 'direcao'])
+def detalhe(request, pk):
+    exp = get_object_or_404(Expedicao, pk=pk)
+    return render(request, 'expedicao/detalhe.html', {'exp': exp})

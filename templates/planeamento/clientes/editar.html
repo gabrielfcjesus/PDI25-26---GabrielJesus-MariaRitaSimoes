@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Editar Cliente — PrimeTool{% endblock %}
+{% block page_title %}Clientes / Fornecedores{% endblock %}
+{% block sub_header %}
+<div class="sub-header">
+  <a href="{% url 'planeamento:clientes' %}">Clientes</a>
+  <span class="sep">›</span>
+  <a href="{% url 'planeamento:cliente-detalhe' cliente.pk %}">{{ cliente.nome }}</a>
+  <span class="sep">›</span><span>Editar</span>
+</div>
+{% endblock %}
+{% block content %}
+<div style="max-width:600px;">
+  <div class="pt-card">
+    <div class="pt-card-header"><i class="bi bi-pencil me-2"></i>Editar Cliente</div>
+    <div style="padding:24px;">
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        <div style="display:flex;flex-direction:column;gap:16px;">
+
+          <div>
+            <label class="pt-label">Nome *</label>
+            <input type="text" name="nome" value="{{ cliente.nome }}" required
+              style="width:100%;padding:10px 12px;border:1px solid #d0d5e8;border-radius:6px;font-size:.9rem;">
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div>
+              <label class="pt-label">NIF</label>
+              <input type="text" name="nif" value="{{ cliente.nif }}"
+                style="width:100%;padding:10px 12px;border:1px solid #d0d5e8;border-radius:6px;font-size:.9rem;">
+            </div>
+            <div>
+              <label class="pt-label">Telefone</label>
+              <input type="text" name="telefone" value="{{ cliente.telefone }}"
+                style="width:100%;padding:10px 12px;border:1px solid #d0d5e8;border-radius:6px;font-size:.9rem;">
+            </div>
+          </div>
+
+          <div>
+            <label class="pt-label">Email</label>
+            <input type="email" name="email" value="{{ cliente.email }}"
+              style="width:100%;padding:10px 12px;border:1px solid #d0d5e8;border-radius:6px;font-size:.9rem;">
+          </div>
+
+          <div>
+            <label class="pt-label">Morada</label>
+            <textarea name="morada" rows="3"
+              style="width:100%;padding:10px 12px;border:1px solid #d0d5e8;border-radius:6px;font-size:.9rem;resize:vertical;">{{ cliente.morada }}</textarea>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:10px;">
+            <input type="checkbox" name="ativo" id="ativo" {% if cliente.ativo %}checked{% endif %}
+              style="width:16px;height:16px;cursor:pointer;">
+            <label for="ativo" style="font-size:.9rem;cursor:pointer;">Cliente ativo</label>
+          </div>
+
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:24px;">
+          <a href="{% url 'planeamento:cliente-detalhe' cliente.pk %}" class="action-btn blue" style="flex:1;padding:12px;">
+            <i class="bi bi-arrow-left"></i>Cancelar
+          </a>
+          <button type="submit" class="action-btn" style="flex:1;padding:12px;background:var(--orange);border:none;cursor:pointer;">
+            <i class="bi bi-check-lg"></i>Guardar
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

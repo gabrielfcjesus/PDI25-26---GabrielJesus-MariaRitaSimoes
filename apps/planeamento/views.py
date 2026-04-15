@@ -124,7 +124,6 @@ def op_criar(request):
 @login_required
 @departamento_required(['planeamento', 'direcao'])
 def op_editar(request, pk):
-    import json as _json
     ordem = get_object_or_404(OrdemProducao, pk=pk)
     clientes = Cliente.objects.filter(ativo=True).order_by('nome')
 
@@ -249,3 +248,31 @@ def cliente_criar_ajax(request):
 def clientes_lista(request):
     clientes = Cliente.objects.all()
     return render(request, 'planeamento/clientes/lista.html', {'clientes': clientes})
+
+
+@login_required
+@departamento_required(['planeamento', 'direcao'])
+def cliente_detalhe(request, pk):
+    cliente = get_object_or_404(Cliente, pk=pk)
+    return render(request, 'planeamento/clientes/detalhe.html', {'cliente': cliente})
+
+
+@login_required
+@departamento_required(['planeamento', 'direcao'])
+def cliente_editar(request, pk):
+    cliente = get_object_or_404(Cliente, pk=pk)
+    if request.method == 'POST':
+        nome = request.POST.get('nome', '').strip()
+        if not nome:
+            messages.error(request, 'O nome do cliente é obrigatório.')
+        else:
+            cliente.nome = nome
+            cliente.nif = request.POST.get('nif', '').strip()
+            cliente.email = request.POST.get('email', '').strip()
+            cliente.telefone = request.POST.get('telefone', '').strip()
+            cliente.morada = request.POST.get('morada', '').strip()
+            cliente.ativo = request.POST.get('ativo') == 'on'
+            cliente.save()
+            messages.success(request, f'Cliente {cliente.nome} atualizado.')
+            return redirect('planeamento:cliente-detalhe', pk=cliente.pk)
+    return render(request, 'planeamento/clientes/editar.html', {'cliente': cliente})

@@ -8,7 +8,7 @@
     <thead><tr><th>Nome</th><th>NIF</th><th>Email</th><th>Telefone</th><th>Estado</th></tr></thead>
     <tbody>
       {% for c in clientes %}
-      <tr>
+      <tr style="cursor:pointer;" onclick="window.location='{% url 'planeamento:cliente-detalhe' c.pk %}'">
         <td><strong>{{ c.nome }}</strong></td>
         <td>{{ c.nif|default:"—" }}</td>
         <td>{{ c.email|default:"—" }}</td>

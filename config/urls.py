@@ -20,4 +20,5 @@ urlpatterns = [
     path('qualidade/', include('apps.qualidade.urls')),
     path('expedicao/', include('apps.expedicao.urls')),
     path('montagem/', include('apps.montagem.urls')),
+    path('auditoria/', include('apps.auditoria.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}Auditoria — PrimeTool{% endblock %}
+{% block page_title %}Auditoria{% endblock %}
+{% block content %}
+
+<!-- Filtros -->
+<div class="pt-card" style="margin-bottom:16px;">
+  <div class="pt-card-header"><i class="bi bi-funnel me-2"></i>Filtros</div>
+  <div style="padding:16px;">
+    <form method="get" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;align-items:end;">
+
+      <div>
+        <label class="pt-label">Pesquisa</label>
+        <input type="text" name="q" value="{{ filtros.q }}" placeholder="Texto na descrição..."
+          style="width:100%;padding:8px 10px;border:1px solid #d0d5e8;border-radius:4px;font-size:.85rem;">
+      </div>
+
+      <div>
+        <label class="pt-label">Ação</label>
+        <select name="acao" style="width:100%;padding:8px 10px;border:1px solid #d0d5e8;border-radius:4px;font-size:.85rem;">
+          <option value="">Todas</option>
+          {% for code, label in acoes %}
+          <option value="{{ code }}" {% if filtros.acao == code %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label class="pt-label">Módulo</label>
+        <select name="modulo" style="width:100%;padding:8px 10px;border:1px solid #d0d5e8;border-radius:4px;font-size:.85rem;">
+          <option value="">Todos</option>
+          {% for m in modulos %}
+          {% if m %}<option value="{{ m }}" {% if filtros.modulo == m %}selected{% endif %}>{{ m }}</option>{% endif %}
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label class="pt-label">Utilizador</label>
+        <select name="utilizador" style="width:100%;padding:8px 10px;border:1px solid #d0d5e8;border-radius:4px;font-size:.85rem;">
+          <option value="">Todos</option>
+          {% for u in utilizadores %}
+          <option value="{{ u.pk }}" {% if filtros.utilizador == u.pk|stringformat:"s" %}selected{% endif %}>{{ u.username }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
+        <label class="pt-label">Data início</label>
+        <input type="date" name="data_inicio" value="{{ filtros.data_inicio }}"
+          style="width:100%;padding:8px 10px;border:1px solid #d0d5e8;border-radius:4px;font-size:.85rem;">
+      </div>
+
+      <div>
+        <label class="pt-label">Data fim</label>
+        <input type="date" name="data_fim" value="{{ filtros.data_fim }}"
+          style="width:100%;padding:8px 10px;border:1px solid #d0d5e8;border-radius:4px;font-size:.85rem;">
+      </div>
+
+      <div style="display:flex;gap:8px;">
+        <button type="submit" class="action-btn" style="flex:1;padding:9px;background:var(--orange);border:none;cursor:pointer;font-size:.85rem;">
+          <i class="bi bi-search"></i>Filtrar
+        </button>
+        <a href="{% url 'auditoria:lista' %}" class="action-btn blue" style="flex:1;padding:9px;font-size:.85rem;">
+          <i class="bi bi-x"></i>Limpar
+        </a>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- Tabela de logs -->
+<div class="pt-card">
+  <div class="pt-card-header">
+    <span><i class="bi bi-shield-check me-2"></i>Registos de Auditoria</span>
+    <span style="font-size:.8rem;opacity:.75;">
+      {% if total > 500 %}A mostrar os 500 mais recentes de {{ total }} registos{% else %}{{ total }} registo{{ total|pluralize:"s" }}{% endif %}
+    </span>
+  </div>
+  <table class="pt-table">
+    <thead>
+      <tr>
+        <th style="width:145px;">Data / Hora</th>
+        <th style="width:130px;">Utilizador</th>
+        <th style="width:120px;">Ação</th>
+        <th style="width:100px;">Módulo</th>
+        <th>Descrição</th>
+        <th style="width:110px;">IP</th>
+        <th style="width:55px;">Código</th>
+        <th style="width:40px;"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for log in logs %}
+      <tr>
+        <td style="font-size:.82rem;white-space:nowrap;color:#666;">{{ log.timestamp|date:"d/m/Y H:i:s" }}</td>
+        <td style="font-size:.85rem;">
+          {% if log.username_cache %}
+            <strong>{{ log.username_cache }}</strong>
+          {% else %}
+            <span style="color:#aaa;">—</span>
+          {% endif %}
+        </td>
+        <td>
+          <span class="badge-s {% if log.acao == 'login' %}aprovado{% elif log.acao == 'login_falhado' or log.acao == 'acesso_negado' or log.acao == 'erro' %}reprovado{% elif log.acao == 'logout' %}pausada{% elif log.acao == 'eliminacao' %}cancelada{% else %}em_producao{% endif %}"
+            style="font-size:.75rem;">
+            {{ log.get_acao_display }}
+          </span>
+        </td>
+        <td style="font-size:.82rem;color:#555;">{{ log.modulo|default:"—" }}</td>
+        <td style="font-size:.84rem;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+          {{ log.descricao|truncatechars:90 }}
+        </td>
+        <td style="font-size:.78rem;color:#888;font-family:monospace;">{{ log.ip|default:"—" }}</td>
+        <td style="text-align:center;">
+          {% if log.status_code %}
+          <span style="font-size:.78rem;font-weight:700;color:{% if log.status_code >= 400 %}#e05252{% else %}#3c9e5f{% endif %};">
+            {{ log.status_code }}
+          </span>
+          {% else %}
+          <span style="color:#ccc;">—</span>
+          {% endif %}
+        </td>
+        <td>
+          <a href="{% url 'auditoria:detalhe' log.pk %}" style="color:#0094ff;font-size:.8rem;" title="Ver detalhe">
+            <i class="bi bi-eye"></i>
+          </a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="8" style="text-align:center;padding:40px;color:#aaa;font-style:italic;">
+          Nenhum registo encontrado para os filtros aplicados.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

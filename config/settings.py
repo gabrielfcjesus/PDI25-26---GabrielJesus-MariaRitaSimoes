@@ -28,6 +28,7 @@ INSTALLED_APPS = [
 
     # Apps PrimeTool
     'apps.core',
+    'apps.auditoria',
     'apps.rh',
     'apps.planeamento',
     'apps.armazem',
@@ -46,6 +47,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'apps.auditoria.middleware.AuditMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'

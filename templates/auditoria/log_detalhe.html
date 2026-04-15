@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Log #{{ log.pk }} — PrimeTool{% endblock %}
+{% block page_title %}Auditoria{% endblock %}
+{% block sub_header %}
+<div class="sub-header">
+  <a href="{% url 'auditoria:lista' %}">Auditoria</a>
+  <span class="sep">›</span><span>Log #{{ log.pk }}</span>
+</div>
+{% endblock %}
+{% block content %}
+<div style="max-width:860px;">
+
+  <!-- Cabeçalho -->
+  <div class="pt-card" style="margin-bottom:16px;">
+    <div class="pt-card-header">
+      <span><i class="bi bi-shield-check me-2"></i>Detalhe do Registo #{{ log.pk }}</span>
+      <span class="badge-s {% if log.acao == 'login' %}aprovado{% elif log.acao == 'login_falhado' or log.acao == 'acesso_negado' or log.acao == 'erro' %}reprovado{% elif log.acao == 'logout' %}pausada{% elif log.acao == 'eliminacao' %}cancelada{% else %}em_producao{% endif %}">
+        {{ log.get_acao_display }}
+      </span>
+    </div>
+    <div style="padding:20px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+      <div>
+        <div class="pt-label">Data / Hora</div>
+        <div style="font-weight:700;">{{ log.timestamp|date:"d/m/Y H:i:s" }}</div>
+      </div>
+      <div>
+        <div class="pt-label">Utilizador</div>
+        <div style="font-weight:700;">{{ log.username_cache|default:"(anónimo)" }}</div>
+      </div>
+      <div>
+        <div class="pt-label">Módulo</div>
+        <div style="font-weight:700;">{{ log.modulo|default:"—" }}</div>
+      </div>
+      <div>
+        <div class="pt-label">Endereço IP</div>
+        <div style="font-weight:700;font-family:monospace;">{{ log.ip|default:"—" }}</div>
+      </div>
+      <div>
+        <div class="pt-label">Método HTTP</div>
+        <div style="font-weight:700;">{{ log.metodo_http|default:"—" }}</div>
+      </div>
+      <div>
+        <div class="pt-label">Código de Estado</div>
+        <div style="font-weight:700;color:{% if log.status_code and log.status_code >= 400 %}#e05252{% else %}#3c9e5f{% endif %};">
+          {{ log.status_code|default:"—" }}
+        </div>
+      </div>
+      <div style="grid-column:1/-1;">
+        <div class="pt-label">Endpoint</div>
+        <div style="font-weight:700;font-family:monospace;font-size:.88rem;">{{ log.endpoint|default:"—" }}</div>
+      </div>
+      <div style="grid-column:1/-1;">
+        <div class="pt-label">Descrição</div>
+        <div style="font-weight:700;">{{ log.descricao|default:"—" }}</div>
+      </div>
+      {% if log.user_agent %}
+      <div style="grid-column:1/-1;">
+        <div class="pt-label">User Agent</div>
+        <div style="font-size:.82rem;color:#666;word-break:break-all;">{{ log.user_agent }}</div>
+      </div>
+      {% endif %}
+      {% if log.content_type and log.object_id %}
+      <div style="grid-column:1/-1;">
+        <div class="pt-label">Objeto Associado</div>
+        <div style="font-weight:700;">{{ log.content_type.model }} #{{ log.object_id }}</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Dados antes/depois -->
+  {% if log.old_data or log.new_data %}
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+
+    {% if log.old_data %}
+    <div class="pt-card">
+      <div class="pt-card-header" style="background:#c0392b;">
+        <span><i class="bi bi-arrow-counterclockwise me-2"></i>Antes</span>
+      </div>
+      <pre style="margin:0;padding:16px;font-size:.82rem;overflow:auto;max-height:320px;background:#fff8f8;">{{ log.old_data|pprint }}</pre>
+    </div>
+    {% endif %}
+
+    {% if log.new_data %}
+    <div class="pt-card">
+      <div class="pt-card-header" style="background:#27ae60;">
+        <span><i class="bi bi-arrow-clockwise me-2"></i>Depois</span>
+      </div>
+      <pre style="margin:0;padding:16px;font-size:.82rem;overflow:auto;max-height:320px;background:#f6fff9;">{{ log.new_data|pprint }}</pre>
+    </div>
+    {% endif %}
+
+  </div>
+  {% endif %}
+
+  <!-- Dados extra -->
+  {% if log.extra %}
+  <div class="pt-card" style="margin-bottom:16px;">
+    <div class="pt-card-header"><i class="bi bi-code-square me-2"></i>Dados Adicionais</div>
+    <pre style="margin:0;padding:16px;font-size:.82rem;overflow:auto;max-height:240px;">{{ log.extra|pprint }}</pre>
+  </div>
+  {% endif %}
+
+  <a href="{% url 'auditoria:lista' %}" class="action-btn blue" style="padding:12px 24px;">
+    <i class="bi bi-arrow-left"></i>Voltar
+  </a>
+
+</div>
+{% endblock %}

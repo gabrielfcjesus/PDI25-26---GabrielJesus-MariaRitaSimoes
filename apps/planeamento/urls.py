@@ -9,4 +9,6 @@ urlpatterns = [
     path('ops/<int:pk>/eliminar/', views.op_eliminar, name='op-eliminar'),
     path('clientes/', views.clientes_lista, name='clientes'),
     path('clientes/criar-ajax/', views.cliente_criar_ajax, name='cliente-criar-ajax'),
+    path('clientes/<int:pk>/', views.cliente_detalhe, name='cliente-detalhe'),
+    path('clientes/<int:pk>/editar/', views.cliente_editar, name='cliente-editar'),
 ]
