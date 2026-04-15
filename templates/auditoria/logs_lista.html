@@ -7,63 +7,66 @@
 <div class="pt-card" style="margin-bottom:16px;">
   <div class="pt-card-header"><i class="bi bi-funnel me-2"></i>Filtros</div>
   <div style="padding:16px;">
-    <form method="get" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;align-items:end;">
+    <form method="get">
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;align-items:end;">
 
-      <div>
-        <label class="pt-label">Pesquisa</label>
-        <input type="text" name="q" value="{{ filtros.q }}" placeholder="Texto na descrição..."
-          style="width:100%;padding:8px 10px;border:1px solid #d0d5e8;border-radius:4px;font-size:.85rem;">
+        <div>
+          <label class="pt-label">Pesquisa</label>
+          <input type="text" name="q" value="{{ filtros.q }}" placeholder="Texto na descrição..."
+            style="width:100%;padding:8px 10px;border:1px solid #d0d5e8;border-radius:4px;font-size:.85rem;">
+        </div>
+
+        <div>
+          <label class="pt-label">Ação</label>
+          <select name="acao" style="width:100%;padding:8px 10px;border:1px solid #d0d5e8;border-radius:4px;font-size:.85rem;">
+            <option value="">Todas</option>
+            {% for code, label in acoes %}
+            <option value="{{ code }}" {% if filtros.acao == code %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label class="pt-label">Módulo</label>
+          <select name="modulo" style="width:100%;padding:8px 10px;border:1px solid #d0d5e8;border-radius:4px;font-size:.85rem;">
+            <option value="">Todos</option>
+            {% for m in modulos %}
+            {% if m %}<option value="{{ m }}" {% if filtros.modulo == m %}selected{% endif %}>{{ m }}</option>{% endif %}
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label class="pt-label">Utilizador</label>
+          <select name="utilizador" style="width:100%;padding:8px 10px;border:1px solid #d0d5e8;border-radius:4px;font-size:.85rem;">
+            <option value="">Todos</option>
+            {% for u in utilizadores %}
+            <option value="{{ u.pk }}" {% if filtros.utilizador == u.pk|stringformat:"s" %}selected{% endif %}>{{ u.username }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label class="pt-label">Data início</label>
+          <input type="date" name="data_inicio" value="{{ filtros.data_inicio }}"
+            style="width:100%;padding:8px 10px;border:1px solid #d0d5e8;border-radius:4px;font-size:.85rem;">
+        </div>
+
+        <div>
+          <label class="pt-label">Data fim</label>
+          <input type="date" name="data_fim" value="{{ filtros.data_fim }}"
+            style="width:100%;padding:8px 10px;border:1px solid #d0d5e8;border-radius:4px;font-size:.85rem;">
+        </div>
+
       </div>
 
-      <div>
-        <label class="pt-label">Ação</label>
-        <select name="acao" style="width:100%;padding:8px 10px;border:1px solid #d0d5e8;border-radius:4px;font-size:.85rem;">
-          <option value="">Todas</option>
-          {% for code, label in acoes %}
-          <option value="{{ code }}" {% if filtros.acao == code %}selected{% endif %}>{{ label }}</option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <div>
-        <label class="pt-label">Módulo</label>
-        <select name="modulo" style="width:100%;padding:8px 10px;border:1px solid #d0d5e8;border-radius:4px;font-size:.85rem;">
-          <option value="">Todos</option>
-          {% for m in modulos %}
-          {% if m %}<option value="{{ m }}" {% if filtros.modulo == m %}selected{% endif %}>{{ m }}</option>{% endif %}
-          {% endfor %}
-        </select>
-      </div>
-
-      <div>
-        <label class="pt-label">Utilizador</label>
-        <select name="utilizador" style="width:100%;padding:8px 10px;border:1px solid #d0d5e8;border-radius:4px;font-size:.85rem;">
-          <option value="">Todos</option>
-          {% for u in utilizadores %}
-          <option value="{{ u.pk }}" {% if filtros.utilizador == u.pk|stringformat:"s" %}selected{% endif %}>{{ u.username }}</option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <div>
-        <label class="pt-label">Data início</label>
-        <input type="date" name="data_inicio" value="{{ filtros.data_inicio }}"
-          style="width:100%;padding:8px 10px;border:1px solid #d0d5e8;border-radius:4px;font-size:.85rem;">
-      </div>
-
-      <div>
-        <label class="pt-label">Data fim</label>
-        <input type="date" name="data_fim" value="{{ filtros.data_fim }}"
-          style="width:100%;padding:8px 10px;border:1px solid #d0d5e8;border-radius:4px;font-size:.85rem;">
-      </div>
-
-      <div style="display:flex;gap:8px;">
-        <button type="submit" class="action-btn" style="flex:1;padding:9px;background:var(--orange);border:none;cursor:pointer;font-size:.85rem;">
-          <i class="bi bi-search"></i>Filtrar
-        </button>
-        <a href="{% url 'auditoria:lista' %}" class="action-btn blue" style="flex:1;padding:9px;font-size:.85rem;">
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px;">
+        <a href="{% url 'auditoria:lista' %}" class="action-btn blue" style="padding:8px 20px;font-size:.85rem;">
           <i class="bi bi-x"></i>Limpar
         </a>
+        <button type="submit" class="action-btn" style="padding:8px 20px;background:var(--orange);border:none;cursor:pointer;font-size:.85rem;">
+          <i class="bi bi-search"></i>Filtrar
+        </button>
       </div>
 
     </form>
