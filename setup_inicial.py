@@ -9,7 +9,7 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
 
-from apps.core.models import Departamento, Cargo, User
+from modulos.core.models import Departamento, Cargo, User
 
 # ─── Departamentos ───────────────────────────────────────────────
 departamentos_data = [

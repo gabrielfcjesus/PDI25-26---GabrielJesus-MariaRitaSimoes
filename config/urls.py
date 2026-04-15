@@ -10,15 +10,15 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # Core: autenticação e dashboard
-    path('', include('apps.core.urls')),
+    path('', include('modulos.core.urls')),
 
     # Módulos ERP
-    path('rh/', include('apps.rh.urls')),
-    path('planeamento/', include('apps.planeamento.urls')),
-    path('armazem/', include('apps.armazem.urls')),
-    path('producao/', include('apps.producao.urls')),
-    path('qualidade/', include('apps.qualidade.urls')),
-    path('expedicao/', include('apps.expedicao.urls')),
-    path('montagem/', include('apps.montagem.urls')),
-    path('auditoria/', include('apps.auditoria.urls')),
+    path('rh/', include('modulos.rh.urls')),
+    path('planeamento/', include('modulos.planeamento.urls')),
+    path('armazem/', include('modulos.armazem.urls')),
+    path('producao/', include('modulos.producao.urls')),
+    path('qualidade/', include('modulos.qualidade.urls')),
+    path('expedicao/', include('modulos.expedicao.urls')),
+    path('montagem/', include('modulos.montagem.urls')),
+    path('auditoria/', include('modulos.auditoria.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

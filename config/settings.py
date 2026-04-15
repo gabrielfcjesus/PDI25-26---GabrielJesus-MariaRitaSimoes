@@ -27,15 +27,15 @@ INSTALLED_APPS = [
     'crispy_bootstrap5',
 
     # Apps PrimeTool
-    'apps.core',
-    'apps.auditoria',
-    'apps.rh',
-    'apps.planeamento',
-    'apps.armazem',
-    'apps.producao',
-    'apps.qualidade',
-    'apps.expedicao',
-    'apps.montagem',
+    'modulos.core',
+    'modulos.auditoria',
+    'modulos.rh',
+    'modulos.planeamento',
+    'modulos.armazem',
+    'modulos.producao',
+    'modulos.qualidade',
+    'modulos.expedicao',
+    'modulos.montagem',
 ]
 
 MIDDLEWARE = [
@@ -47,7 +47,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'apps.auditoria.middleware.AuditMiddleware',
+    'modulos.auditoria.middleware.AuditMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
