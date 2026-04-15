@@ -246,8 +246,16 @@ def cliente_criar_ajax(request):
 @login_required
 @departamento_required(['planeamento', 'direcao'])
 def clientes_lista(request):
-    clientes = Cliente.objects.all()
-    return render(request, 'planeamento/clientes/lista.html', {'clientes': clientes})
+    tipo_filtro = request.GET.get('tipo', 'todos')
+    qs = Cliente.objects.all()
+    if tipo_filtro == 'cliente':
+        qs = qs.filter(tipo__in=['cliente', 'ambos'])
+    elif tipo_filtro == 'fornecedor':
+        qs = qs.filter(tipo__in=['fornecedor', 'ambos'])
+    return render(request, 'planeamento/clientes/lista.html', {
+        'clientes': qs,
+        'tipo_filtro': tipo_filtro,
+    })
 
 
 @login_required
@@ -255,6 +263,18 @@ def clientes_lista(request):
 def cliente_detalhe(request, pk):
     cliente = get_object_or_404(Cliente, pk=pk)
     return render(request, 'planeamento/clientes/detalhe.html', {'cliente': cliente})
+
+
+@login_required
+@departamento_required(['direcao'])
+def cliente_eliminar(request, pk):
+    cliente = get_object_or_404(Cliente, pk=pk)
+    if request.method == 'POST':
+        nome = cliente.nome
+        cliente.delete()
+        messages.success(request, f'Cliente {nome} eliminado.')
+        return redirect('planeamento:clientes')
+    return redirect('planeamento:cliente-detalhe', pk=pk)
 
 
 @login_required
@@ -267,6 +287,7 @@ def cliente_editar(request, pk):
             messages.error(request, 'O nome do cliente é obrigatório.')
         else:
             cliente.nome = nome
+            cliente.tipo = request.POST.get('tipo', 'cliente')
             cliente.nif = request.POST.get('nif', '').strip()
             cliente.email = request.POST.get('email', '').strip()
             cliente.telefone = request.POST.get('telefone', '').strip()

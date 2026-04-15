@@ -70,7 +70,7 @@
       <div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
         <div><div style="font-size:.6rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#888;">Cliente</div><div style="font-weight:700;font-size:.9rem;">{{ exp.ordem.cliente }}</div></div>
         <div><div style="font-size:.6rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#888;">Transportadora / Veículo</div><div style="font-weight:700;font-size:.9rem;">{{ exp.transportadora|default:"—" }}</div></div>
-        <div><div style="font-size:.6rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#888;">Responsável</div><div style="font-weight:700;font-size:.9rem;">{{ exp.responsavel.get_full_name|default:exp.responsavel.username|default:"—" }}</div></div>
+        <div><div style="font-size:.6rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#888;">Responsável</div><div style="font-weight:700;font-size:.9rem;">{% if exp.responsavel %}{{ exp.responsavel.get_full_name|default:exp.responsavel.username }}{% else %}—{% endif %}</div></div>
       </div>
     </div>
 
@@ -149,7 +149,7 @@
         </div>
         <div>
           <div class="pt-label">Responsável</div>
-          <div style="font-weight:700;">{{ exp.responsavel.get_full_name|default:exp.responsavel.username|default:"—" }}</div>
+          <div style="font-weight:700;">{% if exp.responsavel %}{{ exp.responsavel.get_full_name|default:exp.responsavel.username }}{% else %}—{% endif %}</div>
         </div>
       </div>
 

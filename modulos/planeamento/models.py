@@ -6,8 +6,15 @@ from django.db import models
 
 
 class Cliente(models.Model):
-    """Clientes da empresa"""
+    """Clientes e/ou Fornecedores da empresa"""
+    TIPO_CHOICES = [
+        ('cliente', 'Cliente'),
+        ('fornecedor', 'Fornecedor'),
+        ('ambos', 'Cliente e Fornecedor'),
+    ]
+
     nome = models.CharField(max_length=200)
+    tipo = models.CharField(max_length=15, choices=TIPO_CHOICES, default='cliente')
     nif = models.CharField(max_length=20, blank=True)
     email = models.EmailField(blank=True)
     telefone = models.CharField(max_length=20, blank=True)

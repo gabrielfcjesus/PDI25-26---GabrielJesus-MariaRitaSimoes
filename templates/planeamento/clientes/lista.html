@@ -1,24 +1,70 @@
 {% extends "base.html" %}
-{% block title %}Clientes — PrimeTool{% endblock %}
+{% block title %}Clientes / Fornecedores — PrimeTool{% endblock %}
 {% block page_title %}Clientes / Fornecedores{% endblock %}
 {% block content %}
+
+<!-- Barra de filtro -->
+<div style="display:flex;gap:0;margin-bottom:16px;border:1px solid #d0d5e8;width:fit-content;">
+  <a href="?tipo=todos" style="padding:9px 24px;font-size:.85rem;font-weight:700;text-decoration:none;
+    {% if tipo_filtro == 'todos' %}background:var(--navy);color:#fff;{% else %}background:#fff;color:#555;{% endif %}">
+    Todos
+  </a>
+  <a href="?tipo=cliente" style="padding:9px 24px;font-size:.85rem;font-weight:700;text-decoration:none;border-left:1px solid #d0d5e8;
+    {% if tipo_filtro == 'cliente' %}background:var(--navy);color:#fff;{% else %}background:#fff;color:#555;{% endif %}">
+    <i class="bi bi-building me-1"></i>Clientes
+  </a>
+  <a href="?tipo=fornecedor" style="padding:9px 24px;font-size:.85rem;font-weight:700;text-decoration:none;border-left:1px solid #d0d5e8;
+    {% if tipo_filtro == 'fornecedor' %}background:var(--navy);color:#fff;{% else %}background:#fff;color:#555;{% endif %}">
+    <i class="bi bi-truck me-1"></i>Fornecedores
+  </a>
+</div>
+
+<!-- Tabela -->
 <div class="pt-card">
-  <div class="pt-card-header"><span><i class="bi bi-building me-2"></i>Clientes</span></div>
+  <div class="pt-card-header">
+    {% if tipo_filtro == 'cliente' %}
+      <span><i class="bi bi-building me-2"></i>Clientes</span>
+    {% elif tipo_filtro == 'fornecedor' %}
+      <span><i class="bi bi-truck me-2"></i>Fornecedores</span>
+    {% else %}
+      <span><i class="bi bi-building me-2"></i>Clientes / Fornecedores</span>
+    {% endif %}
+    <span style="font-size:.8rem;opacity:.7;">{{ clientes|length }} registo{{ clientes|length|pluralize:"s" }}</span>
+  </div>
   <table class="pt-table">
-    <thead><tr><th>Nome</th><th>NIF</th><th>Email</th><th>Telefone</th><th>Estado</th></tr></thead>
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Tipo</th>
+        <th>NIF</th>
+        <th>Email</th>
+        <th>Telefone</th>
+        <th>Estado</th>
+      </tr>
+    </thead>
     <tbody>
       {% for c in clientes %}
       <tr style="cursor:pointer;" onclick="window.location='{% url 'planeamento:cliente-detalhe' c.pk %}'">
         <td><strong>{{ c.nome }}</strong></td>
+        <td>
+          {% if c.tipo == 'cliente' %}
+            <span class="badge-s em_producao">Cliente</span>
+          {% elif c.tipo == 'fornecedor' %}
+            <span class="badge-s qualidade">Fornecedor</span>
+          {% else %}
+            <span class="badge-s montagem">Ambos</span>
+          {% endif %}
+        </td>
         <td>{{ c.nif|default:"—" }}</td>
         <td>{{ c.email|default:"—" }}</td>
         <td>{{ c.telefone|default:"—" }}</td>
         <td>{% if c.ativo %}<span class="badge-s aprovado">Ativo</span>{% else %}<span class="badge-s reprovado">Inativo</span>{% endif %}</td>
       </tr>
       {% empty %}
-      <tr><td colspan="5" style="text-align:center;padding:32px;color:#999;font-style:italic;">Nenhum cliente registado.</td></tr>
+      <tr><td colspan="6" style="text-align:center;padding:32px;color:#999;font-style:italic;">Nenhum registo encontrado.</td></tr>
       {% endfor %}
     </tbody>
   </table>
 </div>
+
 {% endblock %}

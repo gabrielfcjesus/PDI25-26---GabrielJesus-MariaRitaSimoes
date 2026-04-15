@@ -11,4 +11,5 @@ urlpatterns = [
     path('clientes/criar-ajax/', views.cliente_criar_ajax, name='cliente-criar-ajax'),
     path('clientes/<int:pk>/', views.cliente_detalhe, name='cliente-detalhe'),
     path('clientes/<int:pk>/editar/', views.cliente_editar, name='cliente-editar'),
+    path('clientes/<int:pk>/eliminar/', views.cliente_eliminar, name='cliente-eliminar'),
 ]

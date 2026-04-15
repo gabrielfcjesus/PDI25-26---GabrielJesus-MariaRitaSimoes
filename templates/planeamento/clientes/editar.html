@@ -19,10 +19,20 @@
 
         <div style="display:flex;flex-direction:column;gap:16px;">
 
-          <div>
-            <label class="pt-label">Nome *</label>
-            <input type="text" name="nome" value="{{ cliente.nome }}" required
-              style="width:100%;padding:10px 12px;border:1px solid #d0d5e8;border-radius:6px;font-size:.9rem;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div>
+              <label class="pt-label">Nome *</label>
+              <input type="text" name="nome" value="{{ cliente.nome }}" required
+                style="width:100%;padding:10px 12px;border:1px solid #d0d5e8;border-radius:6px;font-size:.9rem;">
+            </div>
+            <div>
+              <label class="pt-label">Tipo *</label>
+              <select name="tipo" style="width:100%;padding:10px 12px;border:1px solid #d0d5e8;border-radius:6px;font-size:.9rem;">
+                <option value="cliente" {% if cliente.tipo == 'cliente' %}selected{% endif %}>Cliente</option>
+                <option value="fornecedor" {% if cliente.tipo == 'fornecedor' %}selected{% endif %}>Fornecedor</option>
+                <option value="ambos" {% if cliente.tipo == 'ambos' %}selected{% endif %}>Cliente e Fornecedor</option>
+              </select>
+            </div>
           </div>
 
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">

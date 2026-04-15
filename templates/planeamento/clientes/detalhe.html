@@ -21,6 +21,10 @@
       </div>
       <div style="padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:16px;">
         <div>
+          <div class="pt-label">Tipo</div>
+          <div style="font-weight:700;">{{ cliente.get_tipo_display }}</div>
+        </div>
+        <div>
           <div class="pt-label">NIF</div>
           <div style="font-weight:700;">{{ cliente.nif|default:"—" }}</div>
         </div>
@@ -47,12 +51,21 @@
 
     <!-- Botões -->
     <div style="display:flex;gap:10px;">
-      <a href="{% url 'planeamento:clientes' %}" class="action-btn blue" style="flex:1;padding:12px;">
+      <a href="{% url 'planeamento:clientes' %}" class="action-btn blue" style="padding:9px 16px;font-size:.85rem;">
         <i class="bi bi-arrow-left"></i>Voltar
       </a>
-      <a href="{% url 'planeamento:cliente-editar' cliente.pk %}" class="action-btn" style="flex:1;padding:12px;background:var(--orange);">
+      <a href="{% url 'planeamento:cliente-editar' cliente.pk %}" class="action-btn" style="padding:9px 16px;font-size:.85rem;background:var(--orange);">
         <i class="bi bi-pencil"></i>Editar
       </a>
+      {% if request.user.is_direcao %}
+      <form method="post" action="{% url 'planeamento:cliente-eliminar' cliente.pk %}"
+        onsubmit="return confirm('Tens a certeza que queres eliminar o cliente {{ cliente.nome }}?')">
+        {% csrf_token %}
+        <button type="submit" class="action-btn" style="padding:9px 16px;font-size:.85rem;background:#e05252;border:none;cursor:pointer;">
+          <i class="bi bi-trash"></i>Eliminar
+        </button>
+      </form>
+      {% endif %}
     </div>
 
   </div>
